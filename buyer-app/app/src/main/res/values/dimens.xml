@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Spacing -->
+    <dimen name="spacing_xs">4dp</dimen>
+    <dimen name="spacing_sm">8dp</dimen>
+    <dimen name="spacing_md">12dp</dimen>
+    <dimen name="spacing_lg">16dp</dimen>
+    <dimen name="spacing_xl">24dp</dimen>
+
+    <!-- Corner Radius -->
+    <dimen name="radius_sm">8dp</dimen>
+    <dimen name="radius_md">12dp</dimen>
+    <dimen name="radius_lg">14dp</dimen>
+    <dimen name="radius_pill">999dp</dimen>
+
+    <!-- Component sizes -->
+    <dimen name="store_thumbnail_size">76dp</dimen>
+    <dimen name="menu_thumbnail_size">64dp</dimen>
+    <dimen name="bottom_nav_height">64dp</dimen>
+    <dimen name="hero_image_height">200dp</dimen>
+    <dimen name="touch_target_min">48dp</dimen>
+
+    <!-- Typography -->
+    <dimen name="text_display">28sp</dimen>
+    <dimen name="text_headline">21sp</dimen>
+    <dimen name="text_title">17sp</dimen>
+    <dimen name="text_body">14sp</dimen>
+    <dimen name="text_caption">12sp</dimen>
+    <dimen name="text_micro">10sp</dimen>
+    <dimen name="text_button">15sp</dimen>
+</resources>

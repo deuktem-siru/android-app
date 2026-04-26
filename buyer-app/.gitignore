@@ -1,0 +1,40 @@
+# Built outputs
+/build/
+app/build/
+/captures/
+
+# Local configuration (contains SDK path — machine-specific)
+local.properties
+
+# Gradle
+.gradle/
+gradle/wrapper/gradle-wrapper.jar
+
+# IntelliJ / Android Studio
+*.iml
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/gradle.xml
+.idea/assetWizardSettings.xml
+.idea/dictionaries/
+.idea/libraries/
+.idea/modules.xml
+.idea/caches/
+.idea/navEditor.xml
+.idea/deploymentTargetSelector.xml
+
+# Keep run configurations shared with team
+!.idea/runConfigurations/
+
+# Native builds
+.externalNativeBuild/
+.cxx/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Keystore — never commit signing credentials
+*.jks
+*.keystore
+keystore.properties
