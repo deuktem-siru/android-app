@@ -42,7 +42,7 @@
             android:id="@+id/tv_order_number"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="#OM-7842"
+            android:text=""
             android:textSize="12sp"
             android:textColor="@color/text_sub"
             android:fontFamily="monospace" />
@@ -68,7 +68,7 @@
             android:id="@+id/tv_pickup_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="17:30"
+            android:text=""
             android:textSize="13sp"
             android:textColor="@color/text"
             android:fontFamily="sans-serif-medium" />
@@ -86,17 +86,19 @@
         android:layout_marginTop="10dp">
 
         <TextView
+            android:id="@+id/tv_menu_summary"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="크루아상 모음 박스 × 1"
+            android:text=""
             android:textSize="13sp"
             android:textColor="@color/text" />
 
         <TextView
+            android:id="@+id/tv_total_amount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="5,900원"
+            android:text=""
             android:textSize="14sp"
             android:textColor="@color/text"
             android:fontFamily="sans-serif-medium" />
