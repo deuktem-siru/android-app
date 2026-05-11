@@ -1,5 +1,6 @@
 package com.example.deuktemsiru_seller.ui.order
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -12,12 +13,16 @@ import androidx.lifecycle.lifecycleScope
 import com.example.deuktemsiru_seller.R
 import com.example.deuktemsiru_seller.data.SessionManager
 import com.example.deuktemsiru_seller.databinding.FragmentOrderBinding
+import com.example.deuktemsiru_seller.databinding.ItemOrderCompletedBinding
 import com.example.deuktemsiru_seller.databinding.ItemOrderNewBinding
 import com.example.deuktemsiru_seller.databinding.ItemOrderPickupBinding
 import com.example.deuktemsiru_seller.databinding.ItemOrderPreparingBinding
 import com.example.deuktemsiru_seller.network.OrderApiResponse
 import com.example.deuktemsiru_seller.network.RetrofitClient
 import com.example.deuktemsiru_seller.network.UpdateOrderStatusRequest
+import com.example.deuktemsiru_seller.ui.auth.LoginActivity
+import com.example.deuktemsiru_seller.util.LocalNotificationHelper
+import com.example.deuktemsiru_seller.ui.settings.NotificationSettingsActivity
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 
@@ -32,11 +37,11 @@ class OrderFragment : Fragment() {
 
     private companion object {
         const val TAG = "OrderFragment"
-        const val STATUS_NEW = "NEW"
+        const val STATUS_NEW = "PENDING"
         const val STATUS_PREPARING = "PREPARING"
         const val STATUS_READY = "READY"
         const val STATUS_COMPLETED = "COMPLETED"
-        const val STATUS_REJECTED = "REJECTED"
+        const val STATUS_CANCELLED = "CANCELLED"
     }
 
     override fun onCreateView(
@@ -51,16 +56,21 @@ class OrderFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         session = SessionManager(requireContext())
-        RetrofitClient.authToken = session.token
         setupTabs()
         loadOrders()
+        binding.btnPickupVerify.setOnClickListener {
+            startActivity(Intent(requireContext(), PickupVerifyActivity::class.java))
+        }
+        childFragmentManager.setFragmentResultListener("order_updated", viewLifecycleOwner) { _, bundle ->
+            loadOrders(selectTabAfterLoad = bundle.getInt("next_tab", currentTab))
+        }
     }
 
     private fun loadOrders(selectTabAfterLoad: Int = currentTab) {
         if (!session.isLoggedIn()) return
         lifecycleScope.launch {
             try {
-                allOrders = RetrofitClient.api.getOrders(session.sellerId)
+                allOrders = RetrofitClient.api.getOrders().data ?: emptyList()
                 updateTabCounts()
                 selectTab(selectTabAfterLoad)
             } catch (e: Exception) {
@@ -95,40 +105,39 @@ class OrderFragment : Fragment() {
             0 -> showNewOrders(ordersByStatus(STATUS_NEW))
             1 -> showPreparingOrders(ordersByStatus(STATUS_PREPARING))
             2 -> showPickupOrders(ordersByStatus(STATUS_READY))
-            3 -> showCompletedOrders(ordersByStatus(STATUS_COMPLETED))
+            3 -> showCompletedOrders(ordersByStatuses(STATUS_COMPLETED, STATUS_CANCELLED))
         }
     }
 
     private fun ordersByStatus(status: String): List<OrderApiResponse> =
         allOrders.filter { it.status.equals(status, ignoreCase = true) }
 
+    private fun ordersByStatuses(vararg statuses: String): List<OrderApiResponse> =
+        allOrders.filter { order -> statuses.any { order.status.equals(it, ignoreCase = true) } }
+
     private fun updateTabCounts() {
         binding.tabNew.text = getString(R.string.tab_new_order_count, ordersByStatus(STATUS_NEW).size)
         binding.tabPreparing.text = getString(R.string.tab_preparing_count, ordersByStatus(STATUS_PREPARING).size)
         binding.tabPickup.text = getString(R.string.tab_pickup_ready_count, ordersByStatus(STATUS_READY).size)
-        binding.tabDone.text = getString(R.string.tab_completed_count, ordersByStatus(STATUS_COMPLETED).size)
+        binding.tabDone.text = getString(R.string.tab_completed_count, ordersByStatuses(STATUS_COMPLETED, STATUS_CANCELLED).size)
     }
 
     private fun showNewOrders(orders: List<OrderApiResponse>) {
-        binding.orderListContainer.removeAllViews()
-
-        if (orders.isEmpty()) {
-            binding.orderListContainer.addView(createEmptyView("새로운 주문이 없어요"))
-            return
-        }
-
-        orders.forEach { order ->
+        renderOrders(orders, "새로운 주문이 없어요") { order ->
             val itemBinding = ItemOrderNewBinding.inflate(layoutInflater, binding.orderListContainer, false)
             itemBinding.tvOrderNumber.text = order.orderNumber
             itemBinding.tvOrderTime.text = getString(R.string.just_arrived)
             itemBinding.tvPickupTime.text = order.pickupTime
             itemBinding.tvMenuSummary.text = formatMenuSummary(order)
             itemBinding.tvTotalAmount.text = formatPrice(order.totalAmount)
-
+            itemBinding.root.setOnClickListener { showDetail(order) }
             itemBinding.btnAccept.setOnClickListener {
                 setButtonsEnabled(listOf(itemBinding.btnAccept, itemBinding.btnReject), false)
                 updateStatus(order.id, STATUS_PREPARING, onSuccess = { updatedOrder ->
                     replaceOrder(updatedOrder)
+                    if (NotificationSettingsActivity.isEnabled(requireContext(), "new_order")) {
+                        LocalNotificationHelper.show(requireContext(), "🛍️ 주문 수락됨", order.orderNumber)
+                    }
                     Toast.makeText(requireContext(), "${order.orderNumber} 수락 완료", Toast.LENGTH_SHORT).show()
                     loadOrders(selectTabAfterLoad = 1)
                 }, onFailure = {
@@ -137,7 +146,7 @@ class OrderFragment : Fragment() {
             }
             itemBinding.btnReject.setOnClickListener {
                 setButtonsEnabled(listOf(itemBinding.btnAccept, itemBinding.btnReject), false)
-                updateStatus(order.id, STATUS_REJECTED, onSuccess = { updatedOrder ->
+                updateStatus(order.id, STATUS_CANCELLED, onSuccess = { updatedOrder ->
                     replaceOrder(updatedOrder)
                     Toast.makeText(requireContext(), "${order.orderNumber} 거절됨", Toast.LENGTH_SHORT).show()
                     loadOrders()
@@ -145,72 +154,84 @@ class OrderFragment : Fragment() {
                     setButtonsEnabled(listOf(itemBinding.btnAccept, itemBinding.btnReject), true)
                 })
             }
-            binding.orderListContainer.addView(itemBinding.root)
+            itemBinding.root
         }
     }
 
     private fun showPreparingOrders(orders: List<OrderApiResponse>) {
-        binding.orderListContainer.removeAllViews()
-
-        if (orders.isEmpty()) {
-            binding.orderListContainer.addView(createEmptyView("준비중인 주문이 없어요"))
-            return
-        }
-
-        orders.forEach { order ->
+        renderOrders(orders, "준비중인 주문이 없어요") { order ->
             val itemBinding = ItemOrderPreparingBinding.inflate(layoutInflater, binding.orderListContainer, false)
             itemBinding.tvOrderNumber.text = order.orderNumber
             itemBinding.tvElapsedTime.text = ""
             itemBinding.tvPickupTime.text = order.pickupTime
             itemBinding.tvMenuSummary.text = formatMenuSummary(order)
             itemBinding.tvTotalAmount.text = formatPrice(order.totalAmount)
+            itemBinding.root.setOnClickListener { showDetail(order) }
             itemBinding.btnReady.setOnClickListener {
                 itemBinding.btnReady.isEnabled = false
                 updateStatus(order.id, STATUS_READY, onSuccess = { updatedOrder ->
                     replaceOrder(updatedOrder)
+                    if (NotificationSettingsActivity.isEnabled(requireContext(), "pickup_complete")) {
+                        LocalNotificationHelper.show(requireContext(), "✅ 픽업 준비 완료", order.orderNumber)
+                    }
                     Toast.makeText(requireContext(), "픽업 대기로 이동", Toast.LENGTH_SHORT).show()
                     loadOrders(selectTabAfterLoad = 2)
                 }, onFailure = {
                     itemBinding.btnReady.isEnabled = true
                 })
             }
-            binding.orderListContainer.addView(itemBinding.root)
+            itemBinding.root
         }
     }
 
     private fun showPickupOrders(orders: List<OrderApiResponse>) {
-        binding.orderListContainer.removeAllViews()
-
-        if (orders.isEmpty()) {
-            binding.orderListContainer.addView(createEmptyView("픽업 대기 중인 주문이 없어요"))
-            return
-        }
-
-        orders.forEach { order ->
+        renderOrders(orders, "픽업 대기 중인 주문이 없어요") { order ->
             val itemBinding = ItemOrderPickupBinding.inflate(layoutInflater, binding.orderListContainer, false)
             itemBinding.tvOrderNumber.text = order.orderNumber
             itemBinding.tvPickupCode.text = "코드 ${formatPickupCode(order.pickupCode)}"
             itemBinding.tvPickupTime.text = order.pickupTime
             itemBinding.tvMenuSummary.text = formatMenuSummary(order)
             itemBinding.tvTotalAmount.text = formatPrice(order.totalAmount)
+            itemBinding.root.setOnClickListener { showDetail(order) }
             itemBinding.btnComplete.setOnClickListener {
                 itemBinding.btnComplete.isEnabled = false
                 updateStatus(order.id, STATUS_COMPLETED, onSuccess = { updatedOrder ->
                     replaceOrder(updatedOrder)
+                    if (NotificationSettingsActivity.isEnabled(requireContext(), "sale_complete")) {
+                        LocalNotificationHelper.show(requireContext(), "🎉 판매 완료", "+%,d원".format(order.totalAmount))
+                    }
                     Toast.makeText(requireContext(), "픽업 완료 처리", Toast.LENGTH_SHORT).show()
                     loadOrders(selectTabAfterLoad = 3)
                 }, onFailure = {
                     itemBinding.btnComplete.isEnabled = true
                 })
             }
-            binding.orderListContainer.addView(itemBinding.root)
+            itemBinding.root
         }
     }
 
     private fun showCompletedOrders(orders: List<OrderApiResponse>) {
+        renderOrders(orders, "완료된 주문이 없어요") { order ->
+            val itemBinding = ItemOrderCompletedBinding.inflate(layoutInflater, binding.orderListContainer, false)
+            itemBinding.tvOrderNumber.text = order.orderNumber
+            itemBinding.tvPickupTime.text = order.pickupTime
+            itemBinding.tvMenuSummary.text = formatMenuSummary(order)
+            itemBinding.tvTotalAmount.text = formatPrice(order.totalAmount)
+            itemBinding.root
+        }
+    }
+
+    private fun renderOrders(
+        orders: List<OrderApiResponse>,
+        emptyMessage: String,
+        createItemView: (OrderApiResponse) -> View,
+    ) {
         binding.orderListContainer.removeAllViews()
-        val msg = if (orders.isEmpty()) "완료된 주문이 없어요" else "완료된 주문 ${orders.size}건"
-        binding.orderListContainer.addView(createEmptyView(msg))
+        if (orders.isEmpty()) {
+            binding.orderListContainer.addView(createEmptyView(emptyMessage))
+            return
+        }
+        orders.map(createItemView).forEach { binding.orderListContainer.addView(it) }
     }
 
     private fun updateStatus(
@@ -222,20 +243,22 @@ class OrderFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val updatedOrder = RetrofitClient.api.updateOrderStatus(
-                    sellerId = session.sellerId,
                     orderId = orderId,
                     req = UpdateOrderStatusRequest(status),
-                )
+                ).data ?: return@launch
                 onSuccess(updatedOrder)
             } catch (e: Exception) {
                 if (handleAuthFailure(e)) return@launch
                 onFailure()
                 Log.e(TAG, "Failed to update order status. orderId=$orderId status=$status", e)
-                val message = statusUpdateErrorMessage(e)
-                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), statusUpdateErrorMessage(e), Toast.LENGTH_SHORT).show()
                 loadOrders()
             }
         }
+    }
+
+    private fun showDetail(order: OrderApiResponse) {
+        OrderDetailBottomSheet.newInstance(order).show(childFragmentManager, "order_detail")
     }
 
     private fun replaceOrder(updatedOrder: OrderApiResponse) {
@@ -255,29 +278,22 @@ class OrderFragment : Fragment() {
         code.ifBlank { "----" }.chunked(1).joinToString(" ")
 
     private fun statusUpdateErrorMessage(error: Exception): String {
-        if (error !is HttpException) {
-            val detail = error.localizedMessage?.takeIf { it.isNotBlank() }
-            return if (detail == null) {
-                "상태 업데이트에 실패했어요."
-            } else {
-                "상태 업데이트에 실패했어요. $detail"
-            }
-        }
+        if (error !is HttpException) return "상태 업데이트에 실패했어요."
         val detail = error.response()?.errorBody()?.string()
-            ?.let { Regex(""""error"\s*:\s*"([^"]+)"""").find(it)?.groupValues?.get(1) }
-        return if (detail.isNullOrBlank()) {
-            "상태 업데이트에 실패했어요. (${error.code()})"
-        } else {
-            "상태 업데이트에 실패했어요. $detail"
-        }
+            ?.let { Regex(""""message"\s*:\s*"([^"]+)"""").find(it)?.groupValues?.get(1) }
+        return if (detail.isNullOrBlank()) "상태 업데이트에 실패했어요. (${error.code()})"
+        else "상태 업데이트에 실패했어요. $detail"
     }
 
     private fun handleAuthFailure(error: Exception): Boolean {
         if (error !is HttpException || error.code() !in listOf(401, 403)) return false
         session.clear()
-        RetrofitClient.authToken = null
         Toast.makeText(requireContext(), "다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
-        requireActivity().recreate()
+        startActivity(
+            Intent(requireContext(), LoginActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+        )
         return true
     }
 

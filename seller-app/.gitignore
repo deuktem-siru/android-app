@@ -4,7 +4,7 @@ app/build/
 
 # Gradle
 .gradle/
-gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.jar
 
 # Android local config
 local.properties
@@ -17,6 +17,10 @@ keystore.properties
 .idea/workspace.xml
 .idea/navEditor.xml
 .idea/assetWizardSettings.xml
+.idea/markdown.xml
+.idea/deploymentTargetSelector.xml
+.idea/deviceManager.xml
+.idea/misc.xml
 *.iml
 *.ipr
 *.iws
@@ -25,9 +29,12 @@ keystore.properties
 .DS_Store
 Thumbs.db
 
-# Keystore / secrets
+# Keystore
 *.jks
 *.keystore
+
+# 인증서 추출 임시 파일
+*.der
 
 # Captures / profiling
 /captures/

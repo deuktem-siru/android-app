@@ -1,39 +1,81 @@
 package com.example.deuktemsiru_seller.network
 
-data class LoginRequest(val email: String, val password: String)
-
-data class LoginResponse(
-    val userId: Long,
-    val nickname: String,
-    val role: String,
-    val token: String,
+// ── 공통 응답 래퍼 ────────────────────────────────────────────
+data class ApiResponse<T>(
+    val code: Int,
+    val message: String,
+    val data: T?,
 )
 
+// ── 인증 ──────────────────────────────────────────────────────
+data class KakaoLoginRequest(
+    val kakaoAccessToken: String,
+    val role: String = "SELLER",
+)
+
+data class TokenRefreshRequest(val refreshToken: String)
+
+data class MemberSummary(
+    val memberId: Long,
+    val nickname: String,
+    val role: String,
+)
+
+data class LoginData(
+    val accessToken: String,
+    val refreshToken: String,
+    val member: MemberSummary,
+)
+
+data class TokenData(val accessToken: String)
+
+// ── 판매 상품(SaleItem) ───────────────────────────────────────
+data class SaleItemApiResponse(
+    val id: Long,
+    val menuItemId: Long,
+    val name: String,
+    val emoji: String,
+    val originalPrice: Int,
+    val discountedPrice: Int,
+    val discountRate: Int,
+    val remainingItems: Int,
+    val totalItems: Int,
+    val status: String,
+    val pickupTimeSlot: String,
+)
+
+data class SaleItemRequest(
+    val menuItemId: Long,
+    val discountRate: Int,
+    val quantity: Int,
+    val pickupTimeSlot: String,
+)
+
+data class UpdateSaleStatusRequest(val status: String)
+
+// ── 메뉴 ──────────────────────────────────────────────────────
 data class MenuItemApiResponse(
     val id: Long,
     val name: String,
     val emoji: String,
     val imageUrl: String? = null,
     val originalPrice: Int,
-    val discountedPrice: Int,
-    val discountRate: Int,
-    val remainingItems: Int,
-    val isSoldOut: Boolean,
-    val pickupTimeSlot: String,
 )
 
-data class StoreApiResponse(
-    val id: Long,
+data class MenuItemRequest(
     val name: String,
-    val category: String,
     val emoji: String,
-    val rating: Float,
-    val address: String,
-    val phone: String,
-    val closingTime: String,
-    val menus: List<MenuItemApiResponse>,
+    val originalPrice: Int,
+    val costPrice: Int? = null,
+    val allergyInfo: String? = null,
 )
 
+data class MenuItemUpdateRequest(
+    val name: String? = null,
+    val originalPrice: Int? = null,
+)
+
+// ── 주문 ──────────────────────────────────────────────────────
 data class OrderItemApiResponse(
     val menuItemId: Long,
     val name: String,
@@ -55,24 +97,25 @@ data class OrderApiResponse(
     val items: List<OrderItemApiResponse>,
 )
 
-data class MenuItemRequest(
-    val name: String,
-    val emoji: String,
-    val originalPrice: Int,
-    val discountRate: Int,
-    val quantity: Int,
-    val pickupTimeSlot: String,
-)
-
-data class MenuItemUpdateRequest(
-    val remainingItems: Int? = null,
-    val isSoldOut: Boolean? = null,
-    val discountRate: Int? = null,
-    val pickupTimeSlot: String? = null,
-)
-
 data class UpdateOrderStatusRequest(val status: String)
 
+// ── 가게 ──────────────────────────────────────────────────────
+data class StoreApiResponse(
+    val id: Long,
+    val name: String,
+    val category: String,
+    val address: String,
+    val phone: String,
+    val closingTime: String,
+)
+
+data class UpdateStoreRequest(
+    val address: String? = null,
+    val phone: String? = null,
+    val closingTime: String? = null,
+)
+
+// ── 알림 ──────────────────────────────────────────────────────
 data class SendNotificationRequest(val message: String)
 
 data class NotificationApiResponse(
@@ -84,6 +127,7 @@ data class NotificationApiResponse(
     val recipientCount: Int,
 )
 
+// ── 매출 ──────────────────────────────────────────────────────
 data class DailySales(val date: String, val amount: Int)
 data class TopMenu(val name: String, val emoji: String, val count: Int)
 
@@ -92,10 +136,4 @@ data class SalesApiResponse(
     val todayOrderCount: Int,
     val salesData: List<DailySales>,
     val topMenus: List<TopMenu>,
-)
-
-data class UpdateStoreRequest(
-    val address: String? = null,
-    val phone: String? = null,
-    val closingTime: String? = null,
 )
