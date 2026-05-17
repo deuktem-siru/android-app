@@ -1,7 +1,6 @@
 package com.example.deuktemsiru_buyer.ui.wishlist
 
 import android.content.Context
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -22,6 +21,8 @@ import com.example.deuktemsiru_buyer.data.toStore
 import com.example.deuktemsiru_buyer.databinding.FragmentWishlistBinding
 import com.example.deuktemsiru_buyer.network.RetrofitClient
 import com.example.deuktemsiru_buyer.ui.home.StoreAdapter
+import com.example.deuktemsiru_buyer.util.filterByCategory
+import com.example.deuktemsiru_buyer.util.updateChipSelection
 import kotlinx.coroutines.launch
 
 class WishlistFragment : Fragment() {
@@ -56,14 +57,10 @@ class WishlistFragment : Fragment() {
             return
         }
 
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val stores = RetrofitClient.api.getWishlist().data?.wishlists
-                    ?.map { item ->
-                        runCatching {
-                            RetrofitClient.api.getStore(item.storeId).data?.toStore(isWishlisted = true)
-                        }.getOrNull() ?: item.toStore()
-                    }
+                    ?.map { item -> item.toStore() }
                     ?: emptyList()
                 allStores.clear()
                 allStores.addAll(stores)
@@ -82,10 +79,21 @@ class WishlistFragment : Fragment() {
             onStoreClick = { store ->
                 findNavController().navigate(
                     R.id.action_wishlist_to_storeDetail,
-                    Bundle().apply { putInt("storeId", store.id) }
+                    Bundle().apply { putLong("storeId", store.id) }
                 )
             },
-            onWishlistClick = {}
+            onWishlistClick = { store ->
+                viewLifecycleOwner.lifecycleScope.launch {
+                    runCatching {
+                        RetrofitClient.api.toggleWishlist(store.id.toLong())
+                        allStores.removeAll { it.id == store.id }
+                        updateList(filterStores())
+                        Toast.makeText(requireContext(), "찜 목록에서 제거했어요", Toast.LENGTH_SHORT).show()
+                    }.onFailure {
+                        Toast.makeText(requireContext(), "찜 처리 중 오류가 발생했어요.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
         )
         binding.rvWishlist.apply {
             layoutManager = LinearLayoutManager(requireContext())
@@ -106,13 +114,7 @@ class WishlistFragment : Fragment() {
         chips.forEach { (chip, category) ->
             chip.setOnClickListener {
                 currentCategory = category
-                chips.forEach { (c, _) ->
-                    c.setBackgroundResource(R.drawable.bg_chip_unselected)
-                    c.setTextColor(Color.parseColor("#1A1A1A"))
-                }
-                chip.setBackgroundResource(R.drawable.bg_chip_selected)
-                chip.setTextColor(Color.WHITE)
-
+                chips.updateChipSelection(currentCategory, requireContext())
                 updateList(filterStores())
             }
         }
@@ -138,18 +140,16 @@ class WishlistFragment : Fragment() {
     }
 
     private fun filterStores(): List<Store> {
-        val apiCategory = if (currentCategory == "전체") null else categoryToApi(currentCategory)
         val query = binding.etWishlistSearch.text?.toString()?.trim().orEmpty()
-
-        return allStores.filter { store ->
-            val matchesCategory = apiCategory == null || categoryToApi(store.category) == apiCategory
-            val matchesQuery = query.isBlank() ||
-                    store.name.contains(query, ignoreCase = true) ||
-                    store.category.contains(query, ignoreCase = true) ||
-                    store.address.contains(query, ignoreCase = true) ||
-                    store.menus.any { it.name.contains(query, ignoreCase = true) }
-            matchesCategory && matchesQuery
-        }
+        return allStores.filterByCategory(
+            category = currentCategory,
+            query = query,
+            getCategoryApi = { categoryToApi(it.category) },
+            getName = { it.name },
+            getCategory = { it.category },
+            getAddress = { it.address },
+            getMenuNames = { store -> store.menus.map { it.name } },
+        )
     }
 
     private fun hideKeyboard() {

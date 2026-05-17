@@ -2,10 +2,13 @@ package com.example.deuktemsiru_buyer.ui.cart
 
 import android.graphics.Paint
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.deuktemsiru_buyer.data.CartItem
 import com.example.deuktemsiru_buyer.databinding.ItemCartBinding
+import com.example.deuktemsiru_buyer.util.formatPrice
 
 class CartAdapter(
     private var items: List<CartItem>,
@@ -22,10 +25,15 @@ class CartAdapter(
         fun bind(item: CartItem) {
             binding.tvEmoji.text = item.emoji
             binding.tvMenuName.text = item.menuName
-            binding.tvDiscountedPrice.text = formatPrice(item.discountedPrice * item.quantity)
-            binding.tvOriginalPrice.text = formatPrice(item.originalPrice * item.quantity)
-            binding.tvOriginalPrice.paintFlags =
-                binding.tvOriginalPrice.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+            binding.tvDiscountedPrice.text = (item.discountedPrice * item.quantity).formatPrice()
+            if (item.originalPrice > 0 && item.originalPrice != item.discountedPrice) {
+                binding.tvOriginalPrice.visibility = View.VISIBLE
+                binding.tvOriginalPrice.text = (item.originalPrice * item.quantity).formatPrice()
+                binding.tvOriginalPrice.paintFlags =
+                    binding.tvOriginalPrice.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+            } else {
+                binding.tvOriginalPrice.visibility = View.GONE
+            }
             binding.tvQuantity.text = item.quantity.toString()
 
             binding.cbSelect.isChecked = item.menuId in selectedIds
@@ -48,24 +56,28 @@ class CartAdapter(
     override fun getItemCount() = items.size
 
     fun update(newItems: List<CartItem>) {
-        // keep selection in sync — remove ids that no longer exist
         val newIds = newItems.map { it.menuId }.toSet()
         selectedIds.retainAll(newIds)
+        val diff = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+            override fun getOldListSize() = items.size
+            override fun getNewListSize() = newItems.size
+            override fun areItemsTheSame(o: Int, n: Int) = items[o].menuId == newItems[n].menuId
+            override fun areContentsTheSame(o: Int, n: Int) = items[o] == newItems[n]
+        })
         items = newItems
-        notifyDataSetChanged()
+        diff.dispatchUpdatesTo(this)
     }
 
     fun selectAll() {
         selectedIds.addAll(items.map { it.menuId })
-        notifyDataSetChanged()
+        notifyItemRangeChanged(0, items.size)
     }
 
     fun deselectAll() {
         selectedIds.clear()
-        notifyDataSetChanged()
+        notifyItemRangeChanged(0, items.size)
     }
 
     val allSelected: Boolean get() = items.isNotEmpty() && selectedIds.size == items.size
 
-    private fun formatPrice(price: Int): String = "%,d원".format(price)
 }

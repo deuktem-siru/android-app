@@ -7,7 +7,7 @@ import com.example.deuktemsiru_buyer.network.WishlistItemResponse
 import java.util.Calendar
 
 data class Store(
-    val id: Int,
+    val id: Long,
     val name: String,
     val category: String,
     val emoji: String,
@@ -27,13 +27,15 @@ data class Store(
 )
 
 data class MenuItem(
-    val id: Int,
+    val id: Long,
     val name: String,
     val emoji: String,
     val originalPrice: Int,
     val discountedPrice: Int,
     val discountRate: Int,
     val remainingItems: Int,
+    val pickupStart: String = "",
+    val pickupEnd: String = "",
     val isSoldOut: Boolean = false
 )
 
@@ -41,7 +43,7 @@ fun StoreDetailApiResponse.toStore(isWishlisted: Boolean = false): Store {
     val menus = products.map { it.toMenuItem() }
     val rep = menus.firstOrNull { !it.isSoldOut } ?: menus.firstOrNull()
     return Store(
-        id = storeId.toInt(),
+        id = storeId,
         name = name,
         category = categoryToDisplay(categories.firstOrNull() ?: "OTHER"),
         emoji = categoryEmoji(categories.firstOrNull()),
@@ -62,24 +64,24 @@ fun StoreDetailApiResponse.toStore(isWishlisted: Boolean = false): Store {
 }
 
 fun StoreListItemResponse.toStore() = Store(
-    id = storeId.toInt(),
+    id = storeId,
     name = name,
     category = categoryToDisplay(category),
     emoji = categoryEmoji(category),
     rating = ratingAvg.toFloat(),
     walkingMinutes = (distanceM / 80).coerceAtLeast(1),
-    discountRate = 0,
-    originalPrice = 0,
-    discountedPrice = 0,
+    discountRate = representativeDiscountRate,
+    originalPrice = representativeOriginalPrice,
+    discountedPrice = representativeDiscountPrice,
     remainingItems = availableProductCount,
-    minutesUntilClose = 60,
+    minutesUntilClose = representativePickupEnd?.let { minutesUntilClose(it) } ?: 60,
     address = "",
     phone = "",
     isWishlisted = false,
 )
 
 fun WishlistItemResponse.toStore() = Store(
-    id = storeId.toInt(),
+    id = storeId,
     name = name,
     category = "찜한 매장",
     emoji = "♡",
@@ -96,15 +98,21 @@ fun WishlistItemResponse.toStore() = Store(
 )
 
 fun StoreProductItem.toMenuItem(): MenuItem {
-    val original = if (discountPrice > 0) (discountPrice / 0.7).toInt() else 0
+    val original = when {
+        originalPrice > 0 -> originalPrice
+        discountPrice > 0 -> (discountPrice / 0.7).toInt()
+        else -> 0
+    }
     return MenuItem(
-        id = productId.toInt(),
+        id = productId,
         name = name,
         emoji = "🍽",
         originalPrice = original,
         discountedPrice = discountPrice,
         discountRate = if (original > 0) ((original - discountPrice) * 100 / original) else 0,
         remainingItems = quantityRemaining,
+        pickupStart = pickupStart.orEmpty(),
+        pickupEnd = pickupEnd,
         isSoldOut = status == "SOLD_OUT" || quantityRemaining <= 0,
     )
 }
@@ -138,7 +146,7 @@ fun categoryToDisplay(category: String) = categoryLabels[category] ?: category
 fun categoryToApi(display: String) =
     categoryAliases[display] ?: categoryLabels.entries.firstOrNull { it.value == display }?.key
 
-private fun minutesUntilClose(closingTime: String): Int {
+internal fun minutesUntilClose(closingTime: String): Int {
     val time = closingTime.substringAfter("T", closingTime).substringBefore(".")
     val parts = time.split(":")
     val closeHour = parts.getOrNull(0)?.toIntOrNull() ?: return 60
@@ -146,5 +154,6 @@ private fun minutesUntilClose(closingTime: String): Int {
     val now = Calendar.getInstance()
     val nowMins = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE)
     val closeMins = closeHour * 60 + closeMin
-    return (closeMins - nowMins).coerceAtLeast(0)
+    return if (closeMins >= nowMins) closeMins - nowMins
+           else 24 * 60 - nowMins + closeMins
 }

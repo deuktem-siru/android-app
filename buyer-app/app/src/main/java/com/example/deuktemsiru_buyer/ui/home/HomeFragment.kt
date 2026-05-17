@@ -2,6 +2,7 @@ package com.example.deuktemsiru_buyer.ui.home
 
 import android.content.Context
 import android.os.Bundle
+import android.widget.TextView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,6 +24,7 @@ import com.example.deuktemsiru_buyer.data.SessionManager
 import com.example.deuktemsiru_buyer.data.StoreRepository
 import com.example.deuktemsiru_buyer.databinding.FragmentHomeBinding
 import com.example.deuktemsiru_buyer.network.RetrofitClient
+import com.example.deuktemsiru_buyer.util.updateChipSelection
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 
@@ -37,6 +39,16 @@ class HomeFragment : Fragment() {
 
     private lateinit var storeAdapter: StoreAdapter
     private lateinit var session: SessionManager
+    private val categoryChips: Map<android.widget.TextView, String> by lazy {
+        mapOf(
+            binding.chipAll to "전체",
+            binding.chipKorean to "한식",
+            binding.chipWestern to "양식",
+            binding.chipCafeDessert to "카페·디저트",
+            binding.chipBakery to "베이커리",
+            binding.chipCafe to "카페",
+        )
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -65,11 +77,6 @@ class HomeFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
-                    // Loading
-                    binding.rvStores.isVisible = !state.isLoading
-                    binding.llEmpty.isVisible = !state.isLoading && state.filteredStores.isEmpty() && state.error == null
-
-                    // Store list
                     storeAdapter.submitList(state.filteredStores)
                     binding.rvStores.isVisible = state.filteredStores.isNotEmpty() && !state.isLoading
                     binding.llEmpty.isVisible = state.filteredStores.isEmpty() && !state.isLoading && state.error == null
@@ -104,7 +111,7 @@ class HomeFragment : Fragment() {
             onStoreClick = { store ->
                 findNavController().navigate(
                     R.id.action_home_to_storeDetail,
-                    Bundle().apply { putInt("storeId", store.id) }
+                    Bundle().apply { putLong("storeId", store.id) }
                 )
             },
             onWishlistClick = { store ->
@@ -119,40 +126,13 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupCategoryChips() {
-        val chips = mapOf(
-            binding.chipAll to "전체",
-            binding.chipKorean to "한식",
-            binding.chipWestern to "양식",
-            binding.chipCafeDessert to "카페·디저트",
-            binding.chipBakery to "베이커리",
-            binding.chipCafe to "카페",
-        )
-        chips.forEach { (chip, category) ->
+        categoryChips.forEach { (chip, category) ->
             chip.setOnClickListener { viewModel.selectCategory(category) }
         }
     }
 
     private fun syncCategoryChips(selected: String) {
-        val chips = mapOf(
-            binding.chipAll to "전체",
-            binding.chipKorean to "한식",
-            binding.chipWestern to "양식",
-            binding.chipCafeDessert to "카페·디저트",
-            binding.chipBakery to "베이커리",
-            binding.chipCafe to "카페",
-        )
-        chips.forEach { (chip, category) ->
-            val isSelected = category == selected
-            chip.setBackgroundResource(
-                if (isSelected) R.drawable.bg_chip_selected else R.drawable.bg_chip_unselected
-            )
-            chip.setTextColor(
-                if (isSelected)
-                    requireContext().getColor(R.color.white)
-                else
-                    requireContext().getColor(R.color.color_text)
-            )
-        }
+        categoryChips.updateChipSelection(selected, requireContext())
     }
 
     private fun setupSearch() {

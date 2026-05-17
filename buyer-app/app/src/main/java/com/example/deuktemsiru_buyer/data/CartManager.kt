@@ -6,70 +6,101 @@ data class CartItem(
     val emoji: String,
     val originalPrice: Int,
     val discountedPrice: Int,
+    val pickupStart: String = "",
+    val pickupEnd: String = "",
     var quantity: Int = 1,
 )
 
 object CartManager {
-    var serverCartItemIds: Map<Long, Long> = emptyMap()
-    var storeId: Long = 0L
-    var storeName: String = ""
-    var storeEmoji: String = ""
-    var storeLat: Double = 0.0
-    var storeLng: Double = 0.0
+    @Volatile private var _serverCartItemIds: Map<Long, Long> = emptyMap()
+    @Volatile private var _storeId: Long = 0L
+    @Volatile private var _storeName: String = ""
+    @Volatile private var _storeEmoji: String = ""
+    @Volatile private var _storeLat: Double = 0.0
+    @Volatile private var _storeLng: Double = 0.0
     private val _items = mutableListOf<CartItem>()
-    val items: List<CartItem> get() = _items.toList()
 
+    val serverCartItemIds: Map<Long, Long> get() = _serverCartItemIds
+    val storeId: Long get() = _storeId
+    val storeName: String get() = _storeName
+    val storeEmoji: String get() = _storeEmoji
+    val storeLat: Double get() = _storeLat
+    val storeLng: Double get() = _storeLng
+    val items: List<CartItem> get() = synchronized(this) { _items.toList() }
+
+    @Synchronized
     fun add(storeId: Long, storeName: String, storeEmoji: String, storeLat: Double, storeLng: Double, item: CartItem): Boolean {
-        if (this.storeId != 0L && this.storeId != storeId) return false
-        this.storeId = storeId
-        this.storeName = storeName
-        this.storeEmoji = storeEmoji
-        this.storeLat = storeLat
-        this.storeLng = storeLng
+        if (_storeId != 0L && _storeId != storeId) return false
+        _storeId = storeId
+        _storeName = storeName
+        _storeEmoji = storeEmoji
+        _storeLat = storeLat
+        _storeLng = storeLng
         val existing = _items.find { it.menuId == item.menuId }
         if (existing != null) existing.quantity++ else _items.add(item.copy())
         return true
     }
 
+    @Synchronized
     fun remove(menuId: Long) {
         _items.removeAll { it.menuId == menuId }
-        if (_items.isEmpty()) clear()
+        if (_items.isEmpty()) clearInternal()
     }
 
+    @Synchronized
     fun increaseQuantity(menuId: Long) {
         _items.find { it.menuId == menuId }?.quantity++
     }
 
+    @Synchronized
     fun decreaseQuantity(menuId: Long) {
         val item = _items.find { it.menuId == menuId } ?: return
-        if (item.quantity <= 1) remove(menuId) else item.quantity--
+        if (item.quantity <= 1) {
+            _items.removeAll { it.menuId == menuId }
+            if (_items.isEmpty()) clearInternal()
+        } else {
+            item.quantity--
+        }
     }
 
-    fun clear() {
-        storeId = 0L
-        storeName = ""
-        storeEmoji = ""
-        storeLat = 0.0
-        storeLng = 0.0
+    @Synchronized
+    fun addServerCartItemId(productId: Long, cartItemId: Long) {
+        _serverCartItemIds = _serverCartItemIds + (productId to cartItemId)
+    }
+
+    @Synchronized
+    fun clear() { clearInternal() }
+
+    private fun clearInternal() {
+        _storeId = 0L
+        _storeName = ""
+        _storeEmoji = ""
+        _storeLat = 0.0
+        _storeLng = 0.0
         _items.clear()
-        serverCartItemIds = emptyMap()
+        _serverCartItemIds = emptyMap()
     }
 
+    @Synchronized
     fun replaceFromServer(
         storeId: Long,
         storeName: String,
+        storeLat: Double,
+        storeLng: Double,
         items: List<CartItem>,
         serverIds: Map<Long, Long>,
     ) {
-        clear()
-        this.storeId = storeId
-        this.storeName = storeName
-        this.storeEmoji = "🛍️"
+        clearInternal()
+        _storeId = storeId
+        _storeName = storeName
+        _storeEmoji = "🛍️"
+        _storeLat = storeLat
+        _storeLng = storeLng
         _items.addAll(items)
-        serverCartItemIds = serverIds
+        _serverCartItemIds = serverIds
     }
 
-    val totalPrice: Int get() = _items.sumOf { it.discountedPrice * it.quantity }
-    val totalCount: Int get() = _items.sumOf { it.quantity }
-    val isEmpty: Boolean get() = _items.isEmpty()
+    val totalPrice: Int get() = synchronized(this) { _items.sumOf { it.discountedPrice * it.quantity } }
+    val totalCount: Int get() = synchronized(this) { _items.sumOf { it.quantity } }
+    val isEmpty: Boolean get() = synchronized(this) { _items.isEmpty() }
 }

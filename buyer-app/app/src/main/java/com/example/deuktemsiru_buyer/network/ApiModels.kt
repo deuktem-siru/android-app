@@ -1,5 +1,7 @@
 package com.example.deuktemsiru_buyer.network
 
+import com.google.gson.annotations.SerializedName
+
 // ── 공통 응답 래퍼 ──────────────────────────────────────────
 data class ApiResponse<T>(
     val code: Int,
@@ -48,6 +50,10 @@ data class StoreListItemResponse(
     val ratingAvg: Double,
     val reviewCount: Int,
     val availableProductCount: Int,
+    val representativeOriginalPrice: Int = 0,
+    val representativeDiscountPrice: Int = 0,
+    val representativeDiscountRate: Int = 0,
+    val representativePickupEnd: String? = null,
 )
 
 data class StoreDetailApiResponse(
@@ -69,8 +75,10 @@ data class StoreDetailApiResponse(
 data class StoreProductItem(
     val productId: Long,
     val name: String,
+    val originalPrice: Int = 0,
     val discountPrice: Int,
     val quantityRemaining: Int,
+    val pickupStart: String? = null,
     val pickupEnd: String,
     val status: String,
 )
@@ -129,6 +137,8 @@ data class OrderListItemResponse(
 )
 
 data class OrderItemDetailResponse(
+    val productId: Long? = null,
+    val menuItemId: Long? = null,
     val productName: String,
     val quantity: Int,
     val unitPrice: Int,
@@ -136,12 +146,16 @@ data class OrderItemDetailResponse(
 
 data class OrderDetailResponse(
     val orderId: Long,
+    val orderNumber: String? = null,
+    val customerName: String? = null,
     val pickupCode: String?,
+    val pickupTime: String? = null,
     val status: String,
     val totalPrice: Int,
     val storeName: String,
     val items: List<OrderItemDetailResponse>,
     val payment: PaymentInfo,
+    val createdAt: String? = null,
 )
 
 // ── 사용자 ───────────────────────────────────────────────────
@@ -156,6 +170,7 @@ data class MemberApiResponse(
     val gender: String?,
     val birth: String?,
     val status: Int,
+    @SerializedName(value = "isSiruLinked", alternate = ["siruLinked"])
     val isSiruLinked: Boolean = false,
     val siruBalance: Int = 0,
     val createdAt: String,
@@ -210,13 +225,22 @@ data class CartAddRequest(
     val quantity: Int,
 )
 
+data class CartUpdateRequest(
+    val quantity: Int,
+)
+
 data class CartApiItem(
     val cartItemId: Long,
     val productId: Long,
     val productName: String,
     val storeId: Long,
     val storeName: String,
+    val storeLatitude: Double = 0.0,
+    val storeLongitude: Double = 0.0,
+    val originalPrice: Int = 0,
     val discountPrice: Int,
+    val pickupStart: String = "",
+    val pickupEnd: String = "",
     val quantity: Int,
     val imageUrl: String?,
 )
