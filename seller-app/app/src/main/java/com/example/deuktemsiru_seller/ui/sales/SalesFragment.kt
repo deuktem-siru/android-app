@@ -102,7 +102,7 @@ class SalesFragment : Fragment() {
         binding.tvLoadingIndicator.visibility = View.VISIBLE
         updatePeriodLabel()
 
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             runCatching {
                 val sales = RetrofitClient.api.getSales(
                     period = currentPeriod,
@@ -123,14 +123,16 @@ class SalesFragment : Fragment() {
 
                 val totalOrders = sales.todayOrderCount
                 binding.tvWasteCount.text = "절감 폐기 ${totalOrders}개"
-                val carbonSaved = sales.carbonSavedKg ?: (totalOrders * 0.2f).toInt().toFloat()
+                val carbonSaved = sales.carbonSavedKg ?: 0f
                 binding.tvCo2Amount.text = "탄소 ${carbonSaved.toInt()}kg 절감"
 
                 renderTopMenus(sales.topMenus)
                 binding.pieChart.setSlices(sales.topMenus.map { PieChartView.Slice(it.name, it.count) })
                 updateInsight(sales.salesData.map { it.amount }, sales.topMenus)
             }.onFailure {
-                Toast.makeText(requireContext(), "데이터를 불러올 수 없어요.", Toast.LENGTH_SHORT).show()
+                if (isAdded && context != null) {
+                    Toast.makeText(requireContext(), "데이터를 불러올 수 없어요.", Toast.LENGTH_SHORT).show()
+                }
             }
             binding.tvLoadingIndicator.visibility = View.GONE
         }
@@ -178,20 +180,20 @@ class SalesFragment : Fragment() {
             return
         }
 
-        val rankBgDrawables = listOf(
-            R.drawable.bg_rounded_primary_light,
-            R.drawable.bg_rounded_muted,
-            R.drawable.bg_rounded_muted,
+        data class RankStyle(val bg: Int, val color: Int)
+        val rankStyles = listOf(
+            RankStyle(R.drawable.bg_rounded_primary_light, R.color.primary_dark),
+            RankStyle(R.drawable.bg_rounded_muted, R.color.text_muted),
+            RankStyle(R.drawable.bg_rounded_muted, R.color.text_muted),
         )
-        val rankTextColors = listOf(R.color.primary_dark, R.color.text_muted, R.color.text_muted)
 
         menus.forEachIndexed { i, menu ->
             val itemView = LayoutInflater.from(requireContext())
                 .inflate(R.layout.item_top_menu, binding.containerTopMenus, false)
             itemView.findViewById<TextView>(R.id.tvRank).apply {
                 text = "${i + 1}"
-                setBackgroundResource(rankBgDrawables[i])
-                setTextColor(requireContext().getColor(rankTextColors[i]))
+                setBackgroundResource(rankStyles[i].bg)
+                setTextColor(requireContext().getColor(rankStyles[i].color))
             }
             itemView.findViewById<TextView>(R.id.tvMenuEmoji).text = menu.emoji ?: "🍽️"
             itemView.findViewById<TextView>(R.id.tvMenuName).text = menu.name

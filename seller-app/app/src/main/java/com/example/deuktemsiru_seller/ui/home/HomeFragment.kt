@@ -82,7 +82,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun loadStore() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             runCatching {
                 val store = RetrofitClient.api.getMyStore().data
                 if (store != null) {
@@ -145,7 +145,7 @@ class HomeFragment : Fragment() {
         binding.tvTodayOrders.setOnClickListener {
             (activity as? MainActivity)?.navigateToOrderCompleted()
         }
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             runCatching {
                 val sales = RetrofitClient.api.getSales().data
                 if (sales != null) {
@@ -154,12 +154,12 @@ class HomeFragment : Fragment() {
                 }
             }
         }
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             runCatching {
                 val orders = RetrofitClient.api.getOrders().data ?: emptyList()
-                val newCount = orders.count { it.status.equals("PENDING", ignoreCase = true) }
-                val preparingCount = orders.count { it.status.equals("CONFIRMED", ignoreCase = true) }
-                val pickupCount = orders.count { it.status.equals("PICKED_UP", ignoreCase = true) }
+                val newCount = orders.count { it.status == "PENDING" }
+                val preparingCount = orders.count { it.status == "CONFIRMED" }
+                val pickupCount = orders.count { it.status == "PICKED_UP" }
                 binding.tvReservationNew.text = newCount.toString()
                 binding.tvReservationPreparing.text = preparingCount.toString()
                 binding.tvReservationPickup.text = pickupCount.toString()

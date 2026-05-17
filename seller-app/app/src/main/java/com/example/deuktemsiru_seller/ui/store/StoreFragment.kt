@@ -56,7 +56,7 @@ class StoreFragment : Fragment() {
     // ── 가게 정보 ─────────────────────────────────────────────
 
     private fun loadStore() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             runCatching {
                 val store = RetrofitClient.api.getMyStore().data ?: return@runCatching
                 binding.tvStoreEmoji.text = "🏪"
@@ -82,7 +82,7 @@ class StoreFragment : Fragment() {
             return
         }
 
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             runCatching {
                 binding.btnSave.isEnabled = false
                 val store = RetrofitClient.api.updateStore(
@@ -104,7 +104,7 @@ class StoreFragment : Fragment() {
     // ── 메뉴 목록 ─────────────────────────────────────────────
 
     private fun loadMenus() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             runCatching {
                 val menus = RetrofitClient.api.getMenus().data ?: emptyList()
                 renderMenus(menus)
@@ -122,37 +122,40 @@ class StoreFragment : Fragment() {
         }
 
         menus.forEach { menu ->
-            val row = LinearLayout(requireContext()).apply {
-                orientation = LinearLayout.HORIZONTAL
-                gravity = android.view.Gravity.CENTER_VERTICAL
-                setPadding(0, 12.dp, 0, 12.dp)
-            }
-            val summary = TextView(requireContext()).apply {
-                text = "${menu.emoji} ${menu.name}\n%,d원".format(menu.originalPrice)
-                textSize = 13f
-                setTextColor(ContextCompat.getColor(requireContext(), R.color.text))
-                layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-            }
-            val edit = TextView(requireContext()).apply {
-                text = "수정"
-                textSize = 13f
-                setTextColor(ContextCompat.getColor(requireContext(), R.color.primary_dark))
-                setPadding(12.dp, 8.dp, 12.dp, 8.dp)
-                setOnClickListener { showMenuEditDialog(menu) }
-            }
-            val delete = TextView(requireContext()).apply {
-                text = "삭제"
-                textSize = 13f
-                setTextColor(ContextCompat.getColor(requireContext(), R.color.danger))
-                setPadding(12.dp, 8.dp, 0, 8.dp)
-                setOnClickListener { confirmDeleteMenu(menu) }
-            }
-
-            row.addView(summary)
-            row.addView(edit)
-            row.addView(delete)
-            binding.menuContainer.addView(row)
+            binding.menuContainer.addView(createMenuRow(menu))
         }
+    }
+
+    private fun createMenuRow(menu: MenuItemApiResponse): View {
+        val row = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = android.view.Gravity.CENTER_VERTICAL
+            setPadding(0, 12.dp, 0, 12.dp)
+        }
+        val summary = TextView(requireContext()).apply {
+            text = "${menu.emoji} ${menu.name}\n%,d원".format(menu.originalPrice)
+            textSize = 13f
+            setTextColor(ContextCompat.getColor(requireContext(), R.color.text))
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+        val edit = TextView(requireContext()).apply {
+            text = "수정"
+            textSize = 13f
+            setTextColor(ContextCompat.getColor(requireContext(), R.color.primary_dark))
+            setPadding(12.dp, 8.dp, 12.dp, 8.dp)
+            setOnClickListener { showMenuEditDialog(menu) }
+        }
+        val delete = TextView(requireContext()).apply {
+            text = "삭제"
+            textSize = 13f
+            setTextColor(ContextCompat.getColor(requireContext(), R.color.danger))
+            setPadding(12.dp, 8.dp, 0, 8.dp)
+            setOnClickListener { confirmDeleteMenu(menu) }
+        }
+        row.addView(summary)
+        row.addView(edit)
+        row.addView(delete)
+        return row
     }
 
     private fun menuEmptyView(): View = TextView(requireContext()).apply {
@@ -194,7 +197,7 @@ class StoreFragment : Fragment() {
         }
 
     private fun updateMenu(menuId: Long, req: MenuItemUpdateRequest) {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             runCatching {
                 RetrofitClient.api.updateMenu(menuId, req)
                 Toast.makeText(requireContext(), "메뉴가 수정됐어요.", Toast.LENGTH_SHORT).show()
@@ -210,7 +213,7 @@ class StoreFragment : Fragment() {
             .setTitle("메뉴 삭제")
             .setMessage("${menu.name}을(를) 삭제할까요?")
             .setPositiveButton("삭제") { _, _ ->
-                lifecycleScope.launch {
+                viewLifecycleOwner.lifecycleScope.launch {
                     runCatching {
                         RetrofitClient.api.deleteMenu(menu.id)
                         Toast.makeText(requireContext(), "메뉴가 삭제됐어요.", Toast.LENGTH_SHORT).show()

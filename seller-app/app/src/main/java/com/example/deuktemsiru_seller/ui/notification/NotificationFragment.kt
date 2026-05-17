@@ -29,7 +29,7 @@ class NotificationFragment : Fragment() {
     private var selectedTarget = "regular" // "regular" or "nearby"
     private var selectedRadiusKm = 3
 
-    private val defaultPhrases: MutableList<String> get() = loadPhrases()
+    private val defaultPhrases: MutableList<String> by lazy { loadPhrases() }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentNotificationBinding.inflate(inflater, container, false)
@@ -188,7 +188,7 @@ class NotificationFragment : Fragment() {
     }
 
     private fun sendNotification(message: String) {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             runCatching {
                 val result = RetrofitClient.api.sendNotification(
                     SendNotificationRequest(
@@ -207,7 +207,7 @@ class NotificationFragment : Fragment() {
     }
 
     private fun loadHistory() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             runCatching {
                 renderHistory(RetrofitClient.api.getNotifications().data ?: emptyList())
             }.onFailure {

@@ -1,5 +1,6 @@
 package com.example.deuktemsiru_seller.network
 
+import android.util.Log
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -10,20 +11,26 @@ import com.google.gson.Gson
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.net.HttpURLConnection
-import java.net.URL
+import java.net.URI
 
 object RetrofitClient {
 
-    private const val DEFAULT_BASE_URL = "http://10.0.2.2:8080/"
-    val BASE_URL: String = BuildConfig.BASE_URL.ifBlank { DEFAULT_BASE_URL }
+    private const val EMULATOR_BASE_URL = "http://10.0.2.2:8080/"
+    val BASE_URL: String = BuildConfig.BASE_URL.ifBlank { EMULATOR_BASE_URL }
 
     /** SessionManager에서 accessToken을 설정하면 모든 요청에 자동으로 첨부됩니다. */
-    var accessToken: String? = null
-    var refreshToken: String? = null
+    @Volatile var accessToken: String? = null
+    @Volatile var refreshToken: String? = null
     var onTokenRefreshed: ((String) -> Unit)? = null
 
     /** 목 로그인 세션 여부 — true이면 토큰 갱신 시도를 건너뜁니다. */
     var isMockSession: Boolean = false
+
+    init {
+        if (!BuildConfig.DEBUG && BASE_URL.contains("10.0.2.2")) {
+            error("릴리스 빌드에서 에뮬레이터 URL을 사용할 수 없습니다. local.properties에 BACKEND_BASE_URL을 설정하세요.")
+        }
+    }
 
     private val client: OkHttpClient by lazy {
         OkHttpClient.Builder()
@@ -55,7 +62,10 @@ object RetrofitClient {
             if (response.request.header("Authorization").isNullOrBlank()) return null
             if (responseCount(response) >= 2) return null
 
-            if (isMockSession) return null
+            if (isMockSession) {
+                Log.w("RetrofitClient", "Skipping token refresh for mock session")
+                return null
+            }
             val savedRefreshToken = refreshToken?.takeIf { it.isNotBlank() } ?: return null
             val newAccessToken = synchronized(this) {
                 val currentRequestToken = response.request.header("Authorization")?.removePrefix("Bearer ")
@@ -76,7 +86,7 @@ object RetrofitClient {
 
         private fun refreshTokenSync(refreshToken: String): String? {
             return try {
-                val url = URL("${BASE_URL}api/v1/auth/refresh")
+                val url = URI(BASE_URL).resolve("api/v1/auth/refresh").toURL()
                 val conn = (url.openConnection() as HttpURLConnection).apply {
                     requestMethod = "POST"
                     setRequestProperty("Content-Type", "application/json")
@@ -88,9 +98,19 @@ object RetrofitClient {
                 conn.outputStream.use { it.write(body.toByteArray()) }
                 if (conn.responseCode != HttpURLConnection.HTTP_OK) return null
                 val json = conn.inputStream.bufferedReader().readText()
-                Gson().fromJson(json, Map::class.java)["data"]
-                    ?.let { (it as? Map<*, *>)?.get("accessToken") as? String }
-            } catch (_: Exception) { null }
+                val type = com.google.gson.reflect.TypeToken.getParameterized(
+                    ApiResponse::class.java, TokenData::class.java
+                ).type
+                val response: ApiResponse<TokenData>? = Gson().fromJson(json, type)
+                val newToken = response?.data?.accessToken
+                if (newToken == null) {
+                    Log.e("TokenRefresh", "Token refresh succeeded but accessToken was null in response")
+                }
+                newToken
+            } catch (e: Exception) {
+                Log.e("TokenRefresh", "Token refresh failed", e)
+                null
+            }
         }
 
         private fun responseCount(response: Response): Int {
