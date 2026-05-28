@@ -101,17 +101,17 @@ object MockApiService : ApiService {
     override suspend fun kakaoLogin(req: KakaoLoginRequest) = ApiResponse<LoginData>(400, "mock", null)
     override suspend fun debugLogin(req: DebugLoginRequest) = ApiResponse<LoginData>(400, "mock", null)
     override suspend fun refresh(req: TokenRefreshRequest) = ApiResponse<TokenData>(400, "mock", null)
-    override suspend fun logout() = ApiResponse(200, "ok", Unit)
+    override suspend fun logout(memberId: Long) = ApiResponse(200, "ok", Unit)
 
     // ── 멤버 ─────────────────────────────────────────────────────
-    override suspend fun getMyInfo() = ApiResponse(200, "ok", MemberMeResponse(
+    override suspend fun getMyInfo(memberId: Long) = ApiResponse(200, "ok", MemberMeResponse(
         memberId = 1L, nickname = "테스트판매자", role = "SELLER"
     ))
 
     // ── 판매 상품 ─────────────────────────────────────────────────
-    override suspend fun getSaleItems() = ApiResponse(200, "ok", saleItems.toList())
+    override suspend fun getSaleItems(sellerId: Long) = ApiResponse(200, "ok", saleItems.toList())
 
-    override suspend fun createSaleItem(req: SaleItemCreateRequest): ApiResponse<SaleItemApiResponse> {
+    override suspend fun createSaleItem(sellerId: Long, req: SaleItemCreateRequest): ApiResponse<SaleItemApiResponse> {
         val newId = (saleItems.maxOfOrNull { it.id } ?: 0L) + 1L
         val item = SaleItemApiResponse(
             id = newId,
@@ -132,20 +132,21 @@ object MockApiService : ApiService {
     }
 
     override suspend fun createSaleItemWithImage(
+        sellerId: Long,
         name: RequestBody, discountPrice: RequestBody, originalPrice: RequestBody,
         quantityTotal: RequestBody, pickupStart: RequestBody, pickupEnd: RequestBody,
         availableDate: RequestBody, menuItemId: RequestBody?, madeAt: RequestBody?,
         allergenInfo: RequestBody?, images: List<MultipartBody.Part>?,
     ): ApiResponse<SaleItemApiResponse> = ApiResponse(400, "not supported in mock", null)
 
-    override suspend fun updateSaleStatus(id: Long, req: UpdateSaleStatusRequest): ApiResponse<SaleItemApiResponse> {
+    override suspend fun updateSaleStatus(sellerId: Long, id: Long, req: UpdateSaleStatusRequest): ApiResponse<SaleItemApiResponse> {
         val idx = saleItems.indexOfFirst { it.id == id }
         if (idx < 0) return ApiResponse(404, "not found", null)
         saleItems[idx] = saleItems[idx].copy(status = req.status)
         return ApiResponse(200, "ok", saleItems[idx])
     }
 
-    override suspend fun updateSaleItem(id: Long, req: UpdateSaleItemRequest): ApiResponse<SaleItemApiResponse> {
+    override suspend fun updateSaleItem(sellerId: Long, id: Long, req: UpdateSaleItemRequest): ApiResponse<SaleItemApiResponse> {
         val idx = saleItems.indexOfFirst { it.id == id }
         if (idx < 0) return ApiResponse(404, "not found", null)
         saleItems[idx] = saleItems[idx].copy(
@@ -156,16 +157,16 @@ object MockApiService : ApiService {
         return ApiResponse(200, "ok", saleItems[idx])
     }
 
-    override suspend fun cancelSaleItem(id: Long): ApiResponse<Unit> {
+    override suspend fun cancelSaleItem(sellerId: Long, id: Long): ApiResponse<Unit> {
         val idx = saleItems.indexOfFirst { it.id == id }
         if (idx >= 0) saleItems[idx] = saleItems[idx].copy(status = SaleStatus.Expired.apiValue)
         return ApiResponse(200, "ok", Unit)
     }
 
     // ── 메뉴 ─────────────────────────────────────────────────────
-    override suspend fun getMenus() = ApiResponse(200, "ok", menus.toList())
+    override suspend fun getMenus(sellerId: Long) = ApiResponse(200, "ok", menus.toList())
 
-    override suspend fun addMenu(req: MenuItemRequest): ApiResponse<MenuItemApiResponse> {
+    override suspend fun addMenu(sellerId: Long, req: MenuItemRequest): ApiResponse<MenuItemApiResponse> {
         val menu = MenuItemApiResponse(
             id = (menus.maxOfOrNull { it.id } ?: 0L) + 1L,
             name = req.name,
@@ -176,6 +177,7 @@ object MockApiService : ApiService {
     }
 
     override suspend fun addMenuWithImage(
+        sellerId: Long,
         name: RequestBody,
         originalPrice: RequestBody,
         description: RequestBody?,
@@ -183,7 +185,7 @@ object MockApiService : ApiService {
         image: MultipartBody.Part?,
     ): ApiResponse<MenuItemApiResponse> = ApiResponse(400, "not supported in mock", null)
 
-    override suspend fun updateMenu(menuItemId: Long, req: MenuItemUpdateRequest): ApiResponse<MenuItemApiResponse> {
+    override suspend fun updateMenu(sellerId: Long, menuItemId: Long, req: MenuItemUpdateRequest): ApiResponse<MenuItemApiResponse> {
         val idx = menus.indexOfFirst { it.id == menuItemId }
         if (idx < 0) return ApiResponse(404, "not found", null)
         menus[idx] = menus[idx].copy(
@@ -193,37 +195,37 @@ object MockApiService : ApiService {
         return ApiResponse(200, "ok", menus[idx])
     }
 
-    override suspend fun deleteMenu(menuItemId: Long): ApiResponse<Unit> {
+    override suspend fun deleteMenu(sellerId: Long, menuItemId: Long): ApiResponse<Unit> {
         menus.removeIf { it.id == menuItemId }
         return ApiResponse(200, "ok", Unit)
     }
 
     // ── 주문 ─────────────────────────────────────────────────────
-    override suspend fun getOrders() = ApiResponse(200, "ok", orders.toList())
+    override suspend fun getOrders(sellerId: Long) = ApiResponse(200, "ok", orders.toList())
 
-    override suspend fun updateOrderStatus(orderId: Long, req: UpdateOrderStatusRequest): ApiResponse<OrderApiResponse> {
+    override suspend fun updateOrderStatus(sellerId: Long, orderId: Long, req: UpdateOrderStatusRequest): ApiResponse<OrderApiResponse> {
         val idx = orders.indexOfFirst { it.id == orderId }
         if (idx < 0) return ApiResponse(404, "not found", null)
         orders[idx] = orders[idx].copy(status = req.status)
         return ApiResponse(200, "ok", orders[idx])
     }
 
-    override suspend fun confirmPickup(orderId: Long, req: ConfirmPickupRequest): ApiResponse<OrderApiResponse> {
+    override suspend fun confirmPickup(sellerId: Long, orderId: Long, req: ConfirmPickupRequest): ApiResponse<OrderApiResponse> {
         val idx = orders.indexOfFirst { it.id == orderId && it.pickupCode == req.pickupCode }
         if (idx < 0) return ApiResponse(400, "invalid pickup code", null)
         orders[idx] = orders[idx].copy(status = OrderStatus.PickedUp.apiValue)
         return ApiResponse(200, "ok", orders[idx])
     }
 
-    override suspend fun verifyPickupCode(code: String): ApiResponse<OrderApiResponse> {
+    override suspend fun verifyPickupCode(sellerId: Long, code: String): ApiResponse<OrderApiResponse> {
         val order = orders.firstOrNull { it.pickupCode == code && it.orderStatus == OrderStatus.Confirmed }
         return ApiResponse(200, if (order != null) "ok" else "not found", order)
     }
 
     // ── 가게 ─────────────────────────────────────────────────────
-    override suspend fun getMyStore() = ApiResponse(200, "ok", _store)
+    override suspend fun getMyStore(sellerId: Long) = ApiResponse(200, "ok", _store)
 
-    override suspend fun updateStore(req: UpdateStoreRequest): ApiResponse<StoreApiResponse> {
+    override suspend fun updateStore(sellerId: Long, req: UpdateStoreRequest): ApiResponse<StoreApiResponse> {
         _store = _store.copy(
             address = req.address ?: _store.address,
             phone = req.phone ?: _store.phone,
@@ -233,7 +235,7 @@ object MockApiService : ApiService {
     }
 
     // ── 알림 ─────────────────────────────────────────────────────
-    override suspend fun sendNotification(req: SendNotificationRequest): ApiResponse<NotificationApiResponse> {
+    override suspend fun sendNotification(sellerId: Long, req: SendNotificationRequest): ApiResponse<NotificationApiResponse> {
         val notif = NotificationApiResponse(
             id = (notifications.maxOfOrNull { it.id } ?: 0L) + 1L,
             storeId = 1L,
@@ -246,9 +248,9 @@ object MockApiService : ApiService {
         return ApiResponse(200, "ok", notif)
     }
 
-    override suspend fun getNotifications() = ApiResponse(200, "ok", notifications.toList())
+    override suspend fun getNotifications(sellerId: Long) = ApiResponse(200, "ok", notifications.toList())
 
-    override suspend fun getSettlements(year: Int, month: Int): ApiResponse<SettlementListResponse> {
+    override suspend fun getSettlements(sellerId: Long, year: Int, month: Int): ApiResponse<SettlementListResponse> {
         val total = orders.filter { it.orderStatus in listOf(OrderStatus.PickedUp, OrderStatus.Completed) }.sumOf { it.totalAmount }
         val fee = (total * 0.03).toInt()
         return ApiResponse(
@@ -271,14 +273,14 @@ object MockApiService : ApiService {
         )
     }
 
-    override suspend fun requestWithdrawal(req: SettlementWithdrawRequest): ApiResponse<SettlementItem> {
-        val item = getSettlements(req.year, req.month).data?.settlements?.firstOrNull()
+    override suspend fun requestWithdrawal(sellerId: Long, req: SettlementWithdrawRequest): ApiResponse<SettlementItem> {
+        val item = getSettlements(sellerId, req.year, req.month).data?.settlements?.firstOrNull()
             ?: SettlementItem(0, "${req.year}-${req.month}-01", "${req.year}-${req.month}-${java.time.YearMonth.of(req.year, req.month).lengthOfMonth()}", 0, 0, 0, OrderStatus.Pending.apiValue, null)
         return ApiResponse(200, "ok", item)
     }
 
     // ── 매출 ─────────────────────────────────────────────────────
-    override suspend fun getSales(period: String, date: String?): ApiResponse<SalesApiResponse> {
+    override suspend fun getSales(sellerId: Long, period: String, date: String?): ApiResponse<SalesApiResponse> {
         val weeklyBase = listOf(
             DailySales("05.09", 32500), DailySales("05.10", 28000),
             DailySales("05.11", 0),     DailySales("05.12", 41000),
@@ -286,7 +288,12 @@ object MockApiService : ApiService {
             DailySales("05.15", 18000),
         )
         val salesData = when (period) {
-            SalesPeriod.Day.apiValue -> listOf(DailySales("05.15", 18000))
+            SalesPeriod.Day.apiValue -> {
+                val d = date?.let { runCatching { java.time.LocalDate.parse(it) }.getOrDefault(java.time.LocalDate.now()) } ?: java.time.LocalDate.now()
+                val seed = d.dayOfYear + d.year * 365
+                val amount = if (seed % 5 == 0) 0 else 8000 + (seed % 19) * 2000
+                listOf(DailySales(d.format(java.time.format.DateTimeFormatter.ofPattern("MM.dd")), amount))
+            }
             SalesPeriod.Month.apiValue -> (1..15).map { d ->
                 DailySales("05.%02d".format(d), if (d % 7 == 0) 0 else 12000 + d * 1300)
             }

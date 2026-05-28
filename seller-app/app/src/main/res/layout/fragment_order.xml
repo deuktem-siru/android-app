@@ -16,14 +16,14 @@
         android:paddingEnd="20dp"
         android:paddingTop="16dp"
         android:paddingBottom="12dp"
-        android:background="@color/white">
+        android:background="@color/surface_alt">
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="주문 관리"
-            android:textSize="18sp"
+            android:textSize="22sp"
             android:textColor="@color/text"
             android:fontFamily="sans-serif-medium" />
 
@@ -37,7 +37,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="실시간 갱신"
-            android:textSize="12sp"
+            android:textSize="14sp"
             android:textColor="@color/online" />
 
         <TextView
@@ -54,17 +54,29 @@
             android:paddingHorizontal="14dp"
             android:text="픽업 확인"
             android:textColor="@color/white"
-            android:textSize="13sp"
+            android:textSize="16sp"
             android:fontFamily="sans-serif-medium" />
 
     </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/surface_alt"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="6dp"
+        android:text="주문은 신규 → 준비 중 → 픽업 완료 순서로 처리하세요"
+        android:textColor="@color/text_sub"
+        android:textSize="14sp" />
 
     <!-- Status Tabs -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:background="@color/white"
+        android:background="@color/surface_alt"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         android:paddingBottom="0dp">
@@ -76,7 +88,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="@string/tab_new_order_default"
-            android:textSize="13sp"
+            android:textSize="16sp"
             android:textColor="@color/primary"
             android:fontFamily="sans-serif-medium" />
 
@@ -87,7 +99,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="@string/tab_preparing_default"
-            android:textSize="13sp"
+            android:textSize="16sp"
             android:textColor="@color/text_muted" />
 
         <TextView
@@ -97,7 +109,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="@string/tab_pickup_ready_default"
-            android:textSize="13sp"
+            android:textSize="16sp"
             android:textColor="@color/text_muted" />
 
         <TextView
@@ -107,7 +119,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="@string/tab_completed_default"
-            android:textSize="13sp"
+            android:textSize="16sp"
             android:textColor="@color/text_muted" />
 
     </LinearLayout>

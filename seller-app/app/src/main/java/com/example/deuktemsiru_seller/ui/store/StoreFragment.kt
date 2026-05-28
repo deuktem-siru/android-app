@@ -64,7 +64,7 @@ class StoreFragment : Fragment() {
     private fun loadStore() {
         viewLifecycleOwner.lifecycleScope.launch {
             runCatching {
-                val store = RetrofitClient.api.getMyStore().data ?: return@runCatching
+                val store = RetrofitClient.api.getMyStore(RetrofitClient.memberId).data ?: return@runCatching
                 binding.tvStoreEmoji.text = "🏪"
                 binding.tvStoreName.text = store.name
                 binding.tvCategoryStatus.text = "영업 중  •  ${categoryLabel(store.category ?: "")}"
@@ -92,6 +92,7 @@ class StoreFragment : Fragment() {
             runCatching {
                 binding.btnSave.isEnabled = false
                 val store = RetrofitClient.api.updateStore(
+                    RetrofitClient.memberId,
                     UpdateStoreRequest(address = address, phone = phone, closingTime = closingTime)
                 ).data ?: return@runCatching
                 binding.tvStoreName.text = store.name
@@ -112,7 +113,7 @@ class StoreFragment : Fragment() {
     private fun loadMenus() {
         viewLifecycleOwner.lifecycleScope.launch {
             runCatching {
-                val menus = RetrofitClient.api.getMenus().data ?: emptyList()
+                val menus = RetrofitClient.api.getMenus(RetrofitClient.memberId).data ?: emptyList()
                 renderMenus(menus)
             }.onFailure {
                 renderMenus(emptyList())
@@ -194,7 +195,7 @@ class StoreFragment : Fragment() {
     private fun updateMenu(menuId: Long, req: MenuItemUpdateRequest) {
         viewLifecycleOwner.lifecycleScope.launch {
             runCatching {
-                RetrofitClient.api.updateMenu(menuId, req)
+                RetrofitClient.api.updateMenu(RetrofitClient.memberId, menuId, req)
                 toast("메뉴가 수정됐어요.")
                 loadMenus()
             }.onFailure {
@@ -210,7 +211,7 @@ class StoreFragment : Fragment() {
             .setPositiveButton("삭제") { _, _ ->
                 viewLifecycleOwner.lifecycleScope.launch {
                     runCatching {
-                        RetrofitClient.api.deleteMenu(menu.id)
+                        RetrofitClient.api.deleteMenu(RetrofitClient.memberId, menu.id)
                         toast("메뉴가 삭제됐어요.")
                         loadMenus()
                     }.onFailure {

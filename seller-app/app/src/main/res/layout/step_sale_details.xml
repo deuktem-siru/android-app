@@ -27,7 +27,7 @@
                 android:layout_width="36dp"
                 android:layout_height="36dp"
                 android:gravity="center"
-                android:textSize="20sp" />
+                android:textSize="24sp" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -40,7 +40,7 @@
                     android:id="@+id/tv_selected_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="14sp"
+                    android:textSize="17sp"
                     android:textColor="@color/text"
                     android:fontFamily="sans-serif-medium" />
 
@@ -49,7 +49,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     android:textColor="@color/text_sub" />
 
             </LinearLayout>
@@ -62,6 +62,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:background="@drawable/bg_card_white"
+    android:elevation="2dp"
             android:padding="16dp"
             android:layout_marginBottom="12dp">
 
@@ -69,7 +70,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="할인율"
-                android:textSize="13sp"
+                android:textSize="16sp"
                 android:textColor="@color/text_sub"
                 android:layout_marginBottom="10dp" />
 
@@ -88,7 +89,7 @@
                     android:layout_marginEnd="6dp"
                     android:gravity="center"
                     android:text="% 할인율"
-                    android:textSize="13sp"
+                    android:textSize="16sp"
                     android:background="@drawable/bg_discount_preset_selected"
                     android:textColor="@color/white"
                     android:clickable="true"
@@ -102,7 +103,7 @@
                     android:layout_marginStart="6dp"
                     android:gravity="center"
                     android:text="₩ 직접 입력"
-                    android:textSize="13sp"
+                    android:textSize="16sp"
                     android:background="@drawable/bg_discount_preset_normal"
                     android:textColor="@color/text_sub"
                     android:clickable="true"
@@ -131,7 +132,7 @@
                     android:layout_marginEnd="6dp"
                     android:gravity="center"
                     android:text="10%"
-                    android:textSize="13sp"
+                    android:textSize="16sp"
                     android:background="@drawable/bg_discount_preset_normal"
                     android:textColor="@color/text_sub"
                     android:clickable="true"
@@ -145,7 +146,7 @@
                     android:layout_marginHorizontal="6dp"
                     android:gravity="center"
                     android:text="20%"
-                    android:textSize="13sp"
+                    android:textSize="16sp"
                     android:background="@drawable/bg_discount_preset_normal"
                     android:textColor="@color/text_sub"
                     android:clickable="true"
@@ -159,7 +160,7 @@
                     android:layout_marginHorizontal="6dp"
                     android:gravity="center"
                     android:text="30%"
-                    android:textSize="13sp"
+                    android:textSize="16sp"
                     android:background="@drawable/bg_discount_preset_selected"
                     android:textColor="@color/white"
                     android:clickable="true"
@@ -173,7 +174,7 @@
                     android:layout_marginStart="6dp"
                     android:gravity="center"
                     android:text="40%"
-                    android:textSize="13sp"
+                    android:textSize="16sp"
                     android:background="@drawable/bg_discount_preset_normal"
                     android:textColor="@color/text_sub"
                     android:clickable="true"
@@ -198,7 +199,7 @@
                     android:maxLength="2"
                     android:singleLine="true"
                     android:textColor="@color/text"
-                    android:textSize="16sp"
+                    android:textSize="19sp"
                     android:fontFamily="sans-serif-medium" />
 
                 <TextView
@@ -206,7 +207,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="6dp"
                     android:text="%  →"
-                    android:textSize="14sp"
+                    android:textSize="17sp"
                     android:textColor="@color/text_sub" />
 
                 <TextView
@@ -216,7 +217,7 @@
                     android:layout_weight="1"
                     android:layout_marginStart="6dp"
                     android:text="—원"
-                    android:textSize="18sp"
+                    android:textSize="22sp"
                     android:textColor="@color/primary_dark"
                     android:fontFamily="sans-serif-medium" />
 
@@ -242,7 +243,7 @@
                     android:inputType="number"
                     android:singleLine="true"
                     android:textColor="@color/text"
-                    android:textSize="16sp"
+                    android:textSize="19sp"
                     android:fontFamily="sans-serif-medium" />
 
             </LinearLayout>
@@ -255,6 +256,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:background="@drawable/bg_card_white"
+    android:elevation="2dp"
             android:padding="16dp"
             android:layout_marginBottom="12dp">
 
@@ -262,7 +264,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="판매 수량"
-                android:textSize="13sp"
+                android:textSize="16sp"
                 android:textColor="@color/text_sub"
                 android:layout_marginBottom="10dp" />
 
@@ -282,7 +284,7 @@
                     android:focusable="true"
                     android:foreground="?attr/selectableItemBackground"
                     android:text="−"
-                    android:textSize="18sp"
+                    android:textSize="22sp"
                     android:textColor="@color/text" />
 
                 <TextView
@@ -291,7 +293,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="5"
-                    android:textSize="20sp"
+                    android:textSize="24sp"
                     android:textColor="@color/text"
                     android:fontFamily="sans-serif-medium" />
 
@@ -305,7 +307,7 @@
                     android:focusable="true"
                     android:foreground="?attr/selectableItemBackground"
                     android:text="+"
-                    android:textSize="18sp"
+                    android:textSize="22sp"
                     android:textColor="@color/text" />
 
                 <TextView
@@ -313,7 +315,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:text="개"
-                    android:textSize="14sp"
+                    android:textSize="17sp"
                     android:textColor="@color/text_sub" />
 
             </LinearLayout>
@@ -326,6 +328,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:background="@drawable/bg_card_white"
+    android:elevation="2dp"
             android:padding="16dp"
             android:layout_marginBottom="12dp">
 
@@ -333,7 +336,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="픽업 시간"
-                android:textSize="13sp"
+                android:textSize="16sp"
                 android:textColor="@color/text_sub"
                 android:layout_marginBottom="12dp" />
 
@@ -350,6 +353,7 @@
                     android:layout_marginEnd="8dp"
                     android:layout_weight="1"
                     android:background="@drawable/bg_card_primary_border"
+    android:elevation="2dp"
                     android:clickable="true"
                     android:focusable="true"
                     android:foreground="?attr/selectableItemBackground"
@@ -361,7 +365,7 @@
                         android:layout_height="wrap_content"
                         android:text="시작"
                         android:textColor="@color/text_sub"
-                        android:textSize="12sp" />
+                        android:textSize="14sp" />
 
                     <TextView
                         android:id="@+id/tv_pickup_start"
@@ -371,7 +375,7 @@
                         android:fontFamily="sans-serif-medium"
                         android:text="16:30"
                         android:textColor="@color/primary_dark"
-                        android:textSize="22sp" />
+                        android:textSize="26sp" />
 
                 </LinearLayout>
 
@@ -392,7 +396,7 @@
                         android:layout_height="wrap_content"
                         android:text="마감"
                         android:textColor="@color/text_sub"
-                        android:textSize="12sp" />
+                        android:textSize="14sp" />
 
                     <TextView
                         android:id="@+id/tv_pickup_end"
@@ -402,7 +406,7 @@
                         android:fontFamily="sans-serif-medium"
                         android:text="18:00"
                         android:textColor="@color/text"
-                        android:textSize="22sp" />
+                        android:textSize="26sp" />
 
                 </LinearLayout>
 
@@ -427,7 +431,7 @@
                     android:gravity="center"
                     android:text="+30분"
                     android:textColor="@color/text_sub"
-                    android:textSize="12sp" />
+                    android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/chip_1hour"
@@ -442,7 +446,7 @@
                     android:gravity="center"
                     android:text="+1시간"
                     android:textColor="@color/text_sub"
-                    android:textSize="12sp" />
+                    android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/chip_2hour"
@@ -457,7 +461,7 @@
                     android:gravity="center"
                     android:text="+2시간"
                     android:textColor="@color/text_sub"
-                    android:textSize="12sp" />
+                    android:textSize="14sp" />
 
             </LinearLayout>
 

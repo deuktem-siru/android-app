@@ -37,7 +37,7 @@ enum class SaleStatus(val apiValue: String) {
     Expired("EXPIRED"),
     Unknown("");
 
-    val isFinal: Boolean get() = this == SoldOut || this == Expired
+    val isFinal: Boolean get() = this == Expired
 
     companion object {
         fun from(value: String?): SaleStatus =

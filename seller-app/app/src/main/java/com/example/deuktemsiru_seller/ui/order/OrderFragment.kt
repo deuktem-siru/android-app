@@ -103,7 +103,7 @@ class OrderFragment : Fragment() {
 
     private suspend fun refreshOrders(selectTabAfterLoad: Int, silent: Boolean) {
         try {
-            val newOrders = RetrofitClient.api.getOrders().data ?: emptyList()
+            val newOrders = RetrofitClient.api.getOrders(RetrofitClient.memberId).data ?: emptyList()
             val hasNewPendingOrders = hasNewPendingOrders(newOrders)
             val shouldRefreshVisibleList = !silent || visibleOrderIdsChanged(newOrders)
 
@@ -259,8 +259,9 @@ class OrderFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val updatedOrder = RetrofitClient.api.updateOrderStatus(
+                    sellerId = RetrofitClient.memberId,
                     orderId = orderId,
-                        req = UpdateOrderStatusRequest(status.apiValue),
+                    req = UpdateOrderStatusRequest(status.apiValue),
                 ).data ?: return@launch
                 onSuccess(updatedOrder)
                 (activity as? MainActivity)?.refreshOrderBadge()

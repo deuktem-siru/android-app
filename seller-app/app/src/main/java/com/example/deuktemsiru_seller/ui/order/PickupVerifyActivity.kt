@@ -92,7 +92,7 @@ class PickupVerifyActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                val response = RetrofitClient.api.verifyPickupCode(code)
+                val response = RetrofitClient.api.verifyPickupCode(RetrofitClient.memberId, code)
                 val order = response.data
                 if (order != null) {
                     currentOrderId = order.id
@@ -128,7 +128,7 @@ class PickupVerifyActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 val completedOrder = RetrofitClient.api
-                    .confirmPickup(orderId, ConfirmPickupRequest(code))
+                    .confirmPickup(RetrofitClient.memberId, orderId, ConfirmPickupRequest(code))
                     .data
                 binding.cardResult.visibleIf(false)
                 binding.etPickupCode.setText("")

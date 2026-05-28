@@ -31,7 +31,7 @@
             android:layout_width="52dp"
             android:layout_height="52dp"
             android:gravity="center"
-            android:textSize="28sp"
+            android:textSize="34sp"
             android:background="@drawable/bg_rounded_primary_light" />
 
         <LinearLayout
@@ -45,7 +45,7 @@
                 android:id="@+id/tv_detail_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
+                android:textSize="19sp"
                 android:textColor="@color/text"
                 android:fontFamily="sans-serif-medium" />
 
@@ -53,7 +53,7 @@
                 android:id="@+id/tv_detail_pickup_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="12sp"
+                android:textSize="14sp"
                 android:textColor="@color/text_sub"
                 android:layout_marginTop="2dp" />
 
@@ -65,7 +65,7 @@
             android:layout_height="wrap_content"
             android:paddingHorizontal="10dp"
             android:paddingVertical="5dp"
-            android:textSize="12sp"
+            android:textSize="14sp"
             android:fontFamily="sans-serif-medium" />
 
     </LinearLayout>
@@ -87,14 +87,14 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="할인가"
-            android:textSize="13sp"
+            android:textSize="16sp"
             android:textColor="@color/text_sub" />
 
         <TextView
             android:id="@+id/tv_detail_discount_price"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="18sp"
+            android:textSize="22sp"
             android:textColor="@color/primary_dark"
             android:fontFamily="sans-serif-medium" />
 
@@ -103,7 +103,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:textSize="13sp"
+            android:textSize="16sp"
             android:textColor="@color/text_muted" />
 
     </LinearLayout>
@@ -124,14 +124,14 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="잔여 수량"
-            android:textSize="13sp"
+            android:textSize="16sp"
             android:textColor="@color/text_sub" />
 
         <TextView
             android:id="@+id/tv_detail_stock"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="14sp"
+            android:textSize="17sp"
             android:textColor="@color/text"
             android:fontFamily="sans-serif-medium" />
 
@@ -153,14 +153,14 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="픽업 시간"
-            android:textSize="13sp"
+            android:textSize="16sp"
             android:textColor="@color/text_sub" />
 
         <TextView
             android:id="@+id/tv_detail_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="14sp"
+            android:textSize="17sp"
             android:textColor="@color/text"
             android:fontFamily="sans-serif-medium" />
 
@@ -181,6 +181,6 @@
         android:stateListAnimator="@null"
         android:text="상품 관리로 이동"
         android:textColor="@color/text"
-        android:textSize="14sp" />
+        android:textSize="17sp" />
 
 </LinearLayout>

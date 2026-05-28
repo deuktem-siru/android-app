@@ -82,7 +82,7 @@ class MainActivity : AppCompatActivity() {
     // ── 로그아웃 (MyPageFragment에서 호출) ──────────────────────
     fun logout() {
         lifecycleScope.launch {
-            runCatching { RetrofitClient.api.logout() }
+            runCatching { RetrofitClient.api.logout(RetrofitClient.memberId) }
             session.clear()
             navigateToLogin()
         }
@@ -136,7 +136,7 @@ class MainActivity : AppCompatActivity() {
     fun refreshOrderBadge() {
         lifecycleScope.launch {
             runCatching {
-                val response = RetrofitClient.api.getOrders()
+                val response = RetrofitClient.api.getOrders(RetrofitClient.memberId)
                 orderBadgeCount = response.data?.count { it.orderStatus == OrderStatus.Pending } ?: 0
                 updateOrderBadge()
             }

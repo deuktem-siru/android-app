@@ -73,7 +73,7 @@ class ProductListingActivity : AppCompatActivity() {
     private fun loadMenus() {
         lifecycleScope.launch {
             try {
-                menus = RetrofitClient.api.getMenus().data ?: emptyList()
+                menus = RetrofitClient.api.getMenus(RetrofitClient.memberId).data ?: emptyList()
                 loadStep(1)
             } catch (e: Exception) {
                 toast("메뉴를 불러올 수 없어요")
@@ -273,6 +273,7 @@ class ProductListingActivity : AppCompatActivity() {
             try {
                 val discountPrice = resolveDiscountPrice(menu) ?: return@launch
                 val response = RetrofitClient.api.createSaleItem(
+                    RetrofitClient.memberId,
                     SaleItemCreateRequest(
                         menuItemId = menu.id,
                         name = menu.name,
@@ -335,7 +336,7 @@ class ProductListingActivity : AppCompatActivity() {
             .setPositiveButton("삭제") { _, _ ->
                 lifecycleScope.launch {
                     runCatching {
-                        RetrofitClient.api.deleteMenu(menu.id)
+                        RetrofitClient.api.deleteMenu(RetrofitClient.memberId, menu.id)
                     }.onSuccess {
                         if (selectedMenu?.id == menu.id) selectedMenu = null
                         toast("메뉴가 삭제됐어요")

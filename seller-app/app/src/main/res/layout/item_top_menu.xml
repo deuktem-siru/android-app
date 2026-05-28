@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="@drawable/bg_card_white">
+    android:background="@drawable/bg_list_item_bottom">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,7 +18,7 @@
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:gravity="center"
-            android:textSize="13sp"
+            android:textSize="16sp"
             android:fontFamily="sans-serif-medium"
             android:background="@drawable/bg_rounded_primary_light" />
 
@@ -27,7 +27,7 @@
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:gravity="center"
-            android:textSize="20sp"
+            android:textSize="24sp"
             android:layout_marginStart="10dp" />
 
         <LinearLayout
@@ -41,7 +41,7 @@
                 android:id="@+id/tvMenuName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="14sp"
+                android:textSize="17sp"
                 android:textColor="@color/text"
                 android:fontFamily="sans-serif-medium" />
 
@@ -49,7 +49,7 @@
                 android:id="@+id/tvMenuCount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="12sp"
+                android:textSize="14sp"
                 android:textColor="@color/text_sub"
                 android:layout_marginTop="2dp" />
 

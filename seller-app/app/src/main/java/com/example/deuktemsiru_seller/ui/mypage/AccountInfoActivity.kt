@@ -38,7 +38,7 @@ class AccountInfoActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             runCatching {
-                val me = RetrofitClient.api.getMyInfo().data
+                val me = RetrofitClient.api.getMyInfo(RetrofitClient.memberId).data
                 binding.tvEmail.text = me?.email?.takeIf { it.isNotBlank() } ?: "카카오 소셜 계정"
                 binding.tvStoreName.text = (me?.nickname ?: session.nickname).ifBlank { "—" }
             }.onFailure {

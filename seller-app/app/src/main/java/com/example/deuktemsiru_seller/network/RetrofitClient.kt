@@ -21,6 +21,7 @@ object RetrofitClient {
     /** SessionManager에서 accessToken을 설정하면 모든 요청에 자동으로 첨부됩니다. */
     @Volatile var accessToken: String? = null
     @Volatile var refreshToken: String? = null
+    @Volatile var memberId: Long = -1L
     var onTokenRefreshed: ((String) -> Unit)? = null
 
     /** 목 로그인 세션 여부 — true이면 토큰 갱신 시도를 건너뜁니다. */

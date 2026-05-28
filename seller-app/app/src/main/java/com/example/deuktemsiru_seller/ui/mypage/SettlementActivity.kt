@@ -64,6 +64,7 @@ class SettlementActivity : AppCompatActivity() {
         lifecycleScope.launch {
             runCatching {
                 val settlementItem = RetrofitClient.api.getSettlements(
+                    sellerId = RetrofitClient.memberId,
                     year = target.year,
                     month = target.monthValue,
                 ).data?.settlements?.firstOrNull()
@@ -101,6 +102,7 @@ class SettlementActivity : AppCompatActivity() {
                 lifecycleScope.launch {
                     runCatching {
                         RetrofitClient.api.requestWithdrawal(
+                            RetrofitClient.memberId,
                             SettlementWithdrawRequest(target.year, target.monthValue)
                         )
                     }.onSuccess {

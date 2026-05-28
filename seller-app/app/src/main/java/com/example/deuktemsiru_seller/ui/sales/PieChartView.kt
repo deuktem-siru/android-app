@@ -14,8 +14,8 @@ class PieChartView @JvmOverloads constructor(
 
     private var slices: List<Slice> = emptyList()
     private val colors = listOf(
-        0xFF2E7D32.toInt(), 0xFF4CAF50.toInt(), 0xFF81C784.toInt(),
-        0xFF1565C0.toInt(), 0xFF42A5F5.toInt(),
+        0xFF0B7A6E.toInt(), 0xFF2E4A8A.toInt(), 0xFF4DB6AC.toInt(),
+        0xFF5C7BC0.toInt(), 0xFF80CBC4.toInt(),
     )
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {

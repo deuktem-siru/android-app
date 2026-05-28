@@ -109,7 +109,7 @@ class OrderDetailBottomSheet : BottomSheetDialogFragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 RetrofitClient.api.updateOrderStatus(
-                    order.id, UpdateOrderStatusRequest(nextStatus.apiValue)
+                    RetrofitClient.memberId, order.id, UpdateOrderStatusRequest(nextStatus.apiValue)
                 )
                 val (title, body) = when (nextStatus) {
                     OrderStatus.Confirmed -> "🛍️ 주문 수락됨" to (order.orderNumber ?: "")

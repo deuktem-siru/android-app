@@ -26,7 +26,10 @@ class SessionManager(context: Context) {
 
     var memberId: Long
         get() = prefs.getLong("memberId", -1L)
-        set(value) { prefs.edit().putLong("memberId", value).apply() }
+        set(value) {
+            prefs.edit().putLong("memberId", value).apply()
+            RetrofitClient.memberId = value
+        }
 
     var nickname: String
         get() = prefs.getString("nickname", "") ?: ""
@@ -51,6 +54,7 @@ class SessionManager(context: Context) {
     fun restoreToken() {
         RetrofitClient.accessToken = accessToken.takeIf { it.isNotBlank() }
         RetrofitClient.refreshToken = refreshToken.takeIf { it.isNotBlank() }
+        RetrofitClient.memberId = memberId
         RetrofitClient.isMockSession = isMockSession
     }
 
@@ -58,6 +62,7 @@ class SessionManager(context: Context) {
         prefs.edit().clear().apply()
         RetrofitClient.accessToken = null
         RetrofitClient.refreshToken = null
+        RetrofitClient.memberId = -1L
         RetrofitClient.onTokenRefreshed = null
         RetrofitClient.isMockSession = false
     }

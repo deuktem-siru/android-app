@@ -1,6 +1,7 @@
 package com.example.deuktemsiru_seller.ui.product
 
 import android.content.Intent
+import android.graphics.Paint
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -62,7 +63,7 @@ class ProductFragment : Fragment() {
         if (!session.isLoggedIn()) return
         viewLifecycleOwner.lifecycleScope.launch {
             runCatching {
-                val items = RetrofitClient.api.getSaleItems().data ?: emptyList()
+                val items = RetrofitClient.api.getSaleItems(RetrofitClient.memberId).data ?: emptyList()
                 renderItems(items)
             }.onFailure { error ->
                 if (handleSellerAuthFailure(error, session)) return@onFailure
@@ -119,6 +120,16 @@ class ProductFragment : Fragment() {
             itemBinding.btnStatusSoldout.alpha = if (isFinal) 0.35f else 1f
             itemBinding.btnCancel.alpha = 1f
 
+            val isSoldOut = item.saleStatus == SaleStatus.SoldOut
+            itemBinding.tvItemEmoji.alpha = if (isSoldOut) 0.35f else 1f
+            itemBinding.tvItemName.alpha = if (isSoldOut) 0.55f else 1f
+            itemBinding.tvItemDetail.alpha = if (isSoldOut) 0.45f else 1f
+            itemBinding.tvItemName.paintFlags = if (isSoldOut) {
+                itemBinding.tvItemName.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+            } else {
+                itemBinding.tvItemName.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+            }
+
             itemBinding.root
         }
     }
@@ -126,7 +137,7 @@ class ProductFragment : Fragment() {
     private fun updateStatus(itemId: Long, status: String) {
         viewLifecycleOwner.lifecycleScope.launch {
             runCatching {
-                RetrofitClient.api.updateSaleStatus(itemId, UpdateSaleStatusRequest(status))
+                RetrofitClient.api.updateSaleStatus(RetrofitClient.memberId, itemId, UpdateSaleStatusRequest(status))
                 loadSaleItems()
             }.onFailure {
                 toast("상태 변경에 실패했어요")
@@ -176,6 +187,7 @@ class ProductFragment : Fragment() {
                 viewLifecycleOwner.lifecycleScope.launch {
                     runCatching {
                         RetrofitClient.api.updateSaleItem(
+                            RetrofitClient.memberId,
                             item.id,
                             UpdateSaleItemRequest(discountPrice = newPrice, quantityRemaining = newQty),
                         )
@@ -199,7 +211,7 @@ class ProductFragment : Fragment() {
             .setPositiveButton("${actionLabel}하기") { _, _ ->
                 viewLifecycleOwner.lifecycleScope.launch {
                     runCatching {
-                        RetrofitClient.api.cancelSaleItem(item.id)
+                        RetrofitClient.api.cancelSaleItem(RetrofitClient.memberId, item.id)
                         toast("상품이 ${actionLabel}됐어요")
                         loadSaleItems()
                     }.onFailure {

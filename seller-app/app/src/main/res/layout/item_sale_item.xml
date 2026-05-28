@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="@drawable/bg_card_white"
+    android:background="@drawable/bg_card_flat"
     android:padding="14dp"
     android:layout_marginBottom="10dp">
 
@@ -19,7 +19,7 @@
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:gravity="center"
-            android:textSize="20sp" />
+            android:textSize="24sp" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -32,7 +32,7 @@
                 android:id="@+id/tv_item_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="14sp"
+                android:textSize="18sp"
                 android:textColor="@color/text"
                 android:fontFamily="sans-serif-medium" />
 
@@ -41,7 +41,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:textSize="12sp"
+                android:textSize="14sp"
                 android:textColor="@color/text_sub" />
 
         </LinearLayout>
@@ -52,7 +52,7 @@
             android:layout_height="wrap_content"
             android:paddingHorizontal="10dp"
             android:paddingVertical="4dp"
-            android:textSize="12sp"
+            android:textSize="14sp"
             android:fontFamily="sans-serif-medium" />
 
         <TextView
@@ -60,7 +60,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="수정"
-            android:textSize="12sp"
+            android:textSize="14sp"
             android:textColor="@color/primary"
             android:paddingStart="8dp"
             android:paddingEnd="4dp"
@@ -75,7 +75,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="10dp">
+        android:layout_marginTop="12dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="34dp"
+            android:gravity="center"
+            android:layout_marginEnd="8dp"
+            android:text="상태 변경"
+            android:textSize="14sp"
+            android:textColor="@color/text_sub" />
 
         <TextView
             android:id="@+id/btn_status_available"
@@ -89,7 +98,7 @@
             android:foreground="?attr/selectableItemBackground"
             android:gravity="center"
             android:text="판매중"
-            android:textSize="12sp"
+            android:textSize="14sp"
             android:textColor="@color/text_sub" />
 
         <TextView
@@ -104,7 +113,7 @@
             android:foreground="?attr/selectableItemBackground"
             android:gravity="center"
             android:text="품절"
-            android:textSize="12sp"
+            android:textSize="14sp"
             android:textColor="@color/text_sub" />
 
         <TextView
@@ -119,7 +128,7 @@
             android:foreground="?attr/selectableItemBackground"
             android:gravity="center"
             android:text="취소"
-            android:textSize="12sp"
+            android:textSize="14sp"
             android:textColor="@color/text_sub" />
 
     </LinearLayout>

@@ -112,6 +112,7 @@ class MenuRegistrationActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 RetrofitClient.api.addMenuWithImage(
+                    sellerId = RetrofitClient.memberId,
                     name = selectedMenuName.toTextPart(),
                     originalPrice = selectedOriginalPrice.toString().toTextPart(),
                     description = null,

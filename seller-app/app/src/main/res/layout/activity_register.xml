@@ -17,7 +17,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="판매자 회원가입"
-            android:textSize="24sp"
+            android:textSize="29sp"
             android:textColor="@color/text"
             android:fontFamily="sans-serif-medium" />
 
@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
             android:text="시루 가맹 판매자로 등록하세요"
-            android:textSize="14sp"
+            android:textSize="17sp"
             android:textColor="@color/text_sub" />
 
         <TextView
@@ -35,7 +35,7 @@
             android:layout_marginTop="28dp"
             android:layout_marginBottom="6dp"
             android:text="상호명"
-            android:textSize="13sp"
+            android:textSize="16sp"
             android:textColor="@color/text_sub" />
 
         <EditText
@@ -43,13 +43,14 @@
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:background="@drawable/bg_card_white"
+    android:elevation="2dp"
             android:hint="예: 영희네 베이커리"
             android:inputType="text"
             android:paddingHorizontal="16dp"
             android:singleLine="true"
             android:textColor="@color/text"
             android:textColorHint="@color/text_muted"
-            android:textSize="15sp" />
+            android:textSize="18sp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -57,7 +58,7 @@
             android:layout_marginTop="14dp"
             android:layout_marginBottom="6dp"
             android:text="이메일"
-            android:textSize="13sp"
+            android:textSize="16sp"
             android:textColor="@color/text_sub" />
 
         <EditText
@@ -65,13 +66,14 @@
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:background="@drawable/bg_card_white"
+    android:elevation="2dp"
             android:hint="예: store@example.com"
             android:inputType="textEmailAddress"
             android:paddingHorizontal="16dp"
             android:singleLine="true"
             android:textColor="@color/text"
             android:textColorHint="@color/text_muted"
-            android:textSize="15sp" />
+            android:textSize="18sp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -79,7 +81,7 @@
             android:layout_marginTop="14dp"
             android:layout_marginBottom="6dp"
             android:text="비밀번호"
-            android:textSize="13sp"
+            android:textSize="16sp"
             android:textColor="@color/text_sub" />
 
         <EditText
@@ -87,13 +89,14 @@
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:background="@drawable/bg_card_white"
+    android:elevation="2dp"
             android:hint="6자리 이상"
             android:inputType="textPassword"
             android:paddingHorizontal="16dp"
             android:singleLine="true"
             android:textColor="@color/text"
             android:textColorHint="@color/text_muted"
-            android:textSize="15sp" />
+            android:textSize="18sp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -101,7 +104,7 @@
             android:layout_marginTop="14dp"
             android:layout_marginBottom="6dp"
             android:text="사업자번호"
-            android:textSize="13sp"
+            android:textSize="16sp"
             android:textColor="@color/text_sub" />
 
         <LinearLayout
@@ -115,6 +118,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@drawable/bg_card_white"
+    android:elevation="2dp"
                 android:hint="10자리 숫자"
                 android:inputType="number"
                 android:maxLength="10"
@@ -122,7 +126,7 @@
                 android:singleLine="true"
                 android:textColor="@color/text"
                 android:textColorHint="@color/text_muted"
-                android:textSize="15sp" />
+                android:textSize="18sp" />
 
             <Button
                 android:id="@+id/btn_verify"
@@ -136,7 +140,7 @@
                 android:stateListAnimator="@null"
                 android:text="사업자 인증"
                 android:textColor="@color/text"
-                android:textSize="13sp" />
+                android:textSize="16sp" />
 
         </LinearLayout>
 
@@ -146,7 +150,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
             android:text=""
-            android:textSize="12sp"
+            android:textSize="14sp"
             android:visibility="gone" />
 
         <Button
@@ -163,7 +167,7 @@
             android:stateListAnimator="@null"
             android:text="가입하기"
             android:textColor="@color/white"
-            android:textSize="15sp" />
+            android:textSize="18sp" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -176,7 +180,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="이미 계정이 있으신가요?  "
-                android:textSize="13sp"
+                android:textSize="16sp"
                 android:textColor="@color/text_sub" />
 
             <TextView
@@ -184,7 +188,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="로그인하기"
-                android:textSize="13sp"
+                android:textSize="16sp"
                 android:textColor="@color/primary"
                 android:fontFamily="sans-serif-medium"
                 android:clickable="true"

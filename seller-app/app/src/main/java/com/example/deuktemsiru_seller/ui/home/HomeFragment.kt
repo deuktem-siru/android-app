@@ -69,6 +69,9 @@ class HomeFragment : Fragment() {
         binding.btnPickupVerifyHome.setOnClickListener {
             startActivity(Intent(requireContext(), PickupVerifyActivity::class.java))
         }
+        binding.tvViewAllMenus.setOnClickListener {
+            mainActivity?.navigateToProduct()
+        }
 
         if (session.isLoggedIn()) {
             loadStore()
@@ -87,7 +90,7 @@ class HomeFragment : Fragment() {
     private fun loadStore() {
         viewLifecycleOwner.lifecycleScope.launch {
             runCatching {
-                val store = RetrofitClient.api.getMyStore().data
+                val store = RetrofitClient.api.getMyStore(RetrofitClient.memberId).data
                 if (store != null) {
                     binding.tvStoreName.text = store.name
                     binding.tvClosingTime.text = "마감 ${store.closingTime}"
@@ -95,7 +98,7 @@ class HomeFragment : Fragment() {
             }
             // 활성 판매 상품 목록 로드
             runCatching {
-                val items = RetrofitClient.api.getSaleItems().data ?: emptyList()
+                val items = RetrofitClient.api.getSaleItems(RetrofitClient.memberId).data ?: emptyList()
                 renderActiveSaleItems(items)
             }.onFailure {
                 renderActiveSaleItems(emptyList())
@@ -140,7 +143,7 @@ class HomeFragment : Fragment() {
     private fun loadStats() {
         viewLifecycleOwner.lifecycleScope.launch {
             runCatching {
-                val sales = RetrofitClient.api.getSales().data
+                val sales = RetrofitClient.api.getSales(RetrofitClient.memberId).data
                 if (sales != null) {
                     binding.tvTodaySales.text = sales.todaySales.toWon()
                     binding.tvTodayOrders.text = "${sales.todayOrderCount}건"
@@ -149,7 +152,7 @@ class HomeFragment : Fragment() {
         }
         viewLifecycleOwner.lifecycleScope.launch {
             runCatching {
-                val orders = RetrofitClient.api.getOrders().data ?: emptyList()
+                val orders = RetrofitClient.api.getOrders(RetrofitClient.memberId).data ?: emptyList()
                 val newCount = orders.count { it.orderStatus == OrderStatus.Pending }
                 val preparingCount = orders.count { it.orderStatus == OrderStatus.Confirmed }
                 val pickupCount = orders.count { it.orderStatus == OrderStatus.PickedUp }

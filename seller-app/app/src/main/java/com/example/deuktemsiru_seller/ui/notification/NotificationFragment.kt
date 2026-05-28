@@ -189,8 +189,9 @@ class NotificationFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             runCatching {
                 val result = RetrofitClient.api.sendNotification(
-                        SendNotificationRequest(
-                            message = message,
+                    RetrofitClient.memberId,
+                    SendNotificationRequest(
+                        message = message,
                         targetType = selectedTarget.apiValue,
                         radiusKm = if (selectedTarget == NotificationTarget.Nearby) selectedRadiusKm else null,
                     )
@@ -207,7 +208,7 @@ class NotificationFragment : Fragment() {
     private fun loadHistory() {
         viewLifecycleOwner.lifecycleScope.launch {
             runCatching {
-                renderHistory(RetrofitClient.api.getNotifications().data ?: emptyList())
+                renderHistory(RetrofitClient.api.getNotifications(RetrofitClient.memberId).data ?: emptyList())
             }.onFailure {
                 renderHistory(emptyList())
             }

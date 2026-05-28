@@ -110,44 +110,90 @@ class SalesFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             runCatching {
-                val sales = RetrofitClient.api.getSales(
-                    period = currentPeriod.apiValue,
-                    date = computeDateStr(),
-                ).data ?: return@runCatching
-
-                val total = sales.salesData.sumOf { it.amount }
-                binding.tvTotalSales.text = total.toWon()
-
-                val entries = sales.salesData.mapIndexed { i, d ->
-                    BarChartView.Entry(
-                        label = d.date,
-                        value = d.amount,
-                        isHighlighted = currentOffset == 0 && i == sales.salesData.lastIndex,
-                    )
-                }
-                binding.barChart.setEntries(entries)
-
-                val totalOrders = sales.todayOrderCount
-                binding.tvWasteCount.text = "절감 폐기 ${totalOrders}개"
-                val carbonSaved = sales.carbonSavedKg ?: 0f
-                binding.tvCo2Amount.text = "탄소 ${carbonSaved.toInt()}kg 절감"
-
-                renderTopMenus(sales.topMenus)
-                binding.pieChart.setSlices(sales.topMenus.map { PieChartView.Slice(it.name, it.count) })
-                updateInsight(sales.salesData.map { it.amount }, sales.topMenus)
+                if (currentPeriod == SalesPeriod.Day) loadDaySales()
+                else loadPeriodSales()
             }.onFailure { error ->
+                if (!isAdded || _binding == null) return@onFailure
                 if (handleSellerAuthFailure(error, session)) return@onFailure
                 if (error is HttpException && error.code() == 404) {
                     renderEmptySales()
                     return@onFailure
                 }
                 Log.e(TAG, "Failed to load sales", error)
-                if (isAdded && context != null) {
-                    toast("데이터를 불러올 수 없어요.")
-                }
+                toast("데이터를 불러올 수 없어요.")
             }
-            binding.tvLoadingIndicator.visibleIf(false)
+            if (isAdded && _binding != null) binding.tvLoadingIndicator.visibleIf(false)
         }
+    }
+
+    private suspend fun loadDaySales() {
+        val baseDate = LocalDate.now().minusDays(currentOffset.toLong())
+        val dates = listOf(2, 1, 0).map { daysAgo -> baseDate.minusDays(daysAgo.toLong()) }
+
+        val salesByDate = dates.map { date ->
+            date to runCatching {
+                RetrofitClient.api.getSales(
+                    sellerId = RetrofitClient.memberId,
+                    period = SalesPeriod.Day.apiValue,
+                    date = date.format(DateTimeFormatter.ISO_LOCAL_DATE),
+                ).data
+            }.getOrNull()
+        }
+
+        val entries = salesByDate.mapIndexed { i, (date, data) ->
+            val daysAgo = 2 - i
+            val amount = data?.salesData?.firstOrNull()?.amount ?: 0
+            val label = when {
+                daysAgo == 2 && currentOffset == 0 -> "그제"
+                daysAgo == 1 && currentOffset == 0 -> "어제"
+                daysAgo == 0 && currentOffset == 0 -> "오늘"
+                else -> date.format(DateTimeFormatter.ofPattern("M/d"))
+            }
+            BarChartView.Entry(label = label, value = amount, isHighlighted = daysAgo == 0)
+        }
+
+        val todayData = salesByDate.last().second
+        binding.tvTotalSales.text = entries.last().value.toWon()
+        binding.barChart.setEntries(entries)
+
+        val totalOrders = todayData?.todayOrderCount ?: 0
+        binding.tvWasteCount.text = "절감 폐기 ${totalOrders}개"
+        val carbonSaved = todayData?.carbonSavedKg ?: 0f
+        binding.tvCo2Amount.text = "탄소 ${carbonSaved.toInt()}kg 절감"
+
+        val topMenus = todayData?.topMenus ?: emptyList()
+        renderTopMenus(topMenus)
+        binding.pieChart.setSlices(topMenus.map { PieChartView.Slice(it.name, it.count) })
+        updateInsight(entries.map { it.value }, topMenus)
+    }
+
+    private suspend fun loadPeriodSales() {
+        val sales = RetrofitClient.api.getSales(
+            sellerId = RetrofitClient.memberId,
+            period = currentPeriod.apiValue,
+            date = computeDateStr(),
+        ).data ?: return
+
+        val total = sales.salesData.sumOf { it.amount }
+        binding.tvTotalSales.text = total.toWon()
+
+        val entries = sales.salesData.mapIndexed { i, d ->
+            BarChartView.Entry(
+                label = d.date,
+                value = d.amount,
+                isHighlighted = currentOffset == 0 && i == sales.salesData.lastIndex,
+            )
+        }
+        binding.barChart.setEntries(entries)
+
+        val totalOrders = sales.todayOrderCount
+        binding.tvWasteCount.text = "절감 폐기 ${totalOrders}개"
+        val carbonSaved = sales.carbonSavedKg ?: 0f
+        binding.tvCo2Amount.text = "탄소 ${carbonSaved.toInt()}kg 절감"
+
+        renderTopMenus(sales.topMenus)
+        binding.pieChart.setSlices(sales.topMenus.map { PieChartView.Slice(it.name, it.count) })
+        updateInsight(sales.salesData.map { it.amount }, sales.topMenus)
     }
 
     private fun renderEmptySales() {
