@@ -8,6 +8,10 @@ val localProperties = Properties().apply {
     rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
 }
 
+val hasReleaseSigning = listOf("KEYSTORE_PASSWORD", "KEY_ALIAS", "KEY_PASSWORD")
+    .all { !localProperties.getProperty(it).isNullOrBlank() } &&
+    rootProject.file("release.keystore").exists()
+
 android {
     namespace = "com.example.deuktemsiru_seller"
     compileSdk {
@@ -30,18 +34,22 @@ android {
     }
 
     signingConfigs {
-        create("release") {
-            storeFile = rootProject.file("release.keystore")
-            storePassword = localProperties.getProperty("KEYSTORE_PASSWORD", "")
-            keyAlias = localProperties.getProperty("KEY_ALIAS", "")
-            keyPassword = localProperties.getProperty("KEY_PASSWORD", "")
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = rootProject.file("release.keystore")
+                storePassword = localProperties.getProperty("KEYSTORE_PASSWORD")
+                keyAlias = localProperties.getProperty("KEY_ALIAS")
+                keyPassword = localProperties.getProperty("KEY_PASSWORD")
+            }
         }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("release")
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -64,6 +72,7 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.security.crypto)
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
@@ -71,6 +80,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.0")
     implementation("com.kakao.sdk:v2-user:2.21.0")
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+    implementation("com.google.android.flexbox:flexbox:3.0.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

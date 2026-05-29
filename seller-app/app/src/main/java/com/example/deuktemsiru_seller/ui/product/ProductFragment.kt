@@ -1,11 +1,13 @@
 package com.example.deuktemsiru_seller.ui.product
 
 import android.content.Intent
+import android.graphics.Paint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -16,14 +18,30 @@ import com.example.deuktemsiru_seller.databinding.FragmentProductBinding
 import com.example.deuktemsiru_seller.databinding.ItemSaleItemBinding
 import com.example.deuktemsiru_seller.network.RetrofitClient
 import com.example.deuktemsiru_seller.network.SaleItemApiResponse
+import com.example.deuktemsiru_seller.network.SaleStatus
+import com.example.deuktemsiru_seller.network.UpdateSaleItemRequest
 import com.example.deuktemsiru_seller.network.UpdateSaleStatusRequest
+import com.example.deuktemsiru_seller.network.badgeStyle
+import com.example.deuktemsiru_seller.network.cancelSaleItemCompat
+import com.example.deuktemsiru_seller.network.updateSaleItemCompat
+import com.example.deuktemsiru_seller.network.updateSaleStatusCompat
+import com.example.deuktemsiru_seller.util.emptyTextView
+import com.example.deuktemsiru_seller.util.handleSellerAuthFailure
+import com.example.deuktemsiru_seller.util.renderChildren
+import com.example.deuktemsiru_seller.util.toast
+import com.example.deuktemsiru_seller.util.toWon
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 
 class ProductFragment : Fragment() {
 
     private var _binding: FragmentProductBinding? = null
     private val binding get() = _binding!!
     private lateinit var session: SessionManager
+
+    private companion object {
+        const val TAG = "ProductFragment"
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentProductBinding.inflate(inflater, container, false)
@@ -46,77 +64,152 @@ class ProductFragment : Fragment() {
 
     private fun loadSaleItems() {
         if (!session.isLoggedIn()) return
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             runCatching {
-                val items = RetrofitClient.api.getSaleItems().data ?: emptyList()
+                val items = RetrofitClient.api.getSaleItems(RetrofitClient.memberId).data ?: emptyList()
                 renderItems(items)
-            }.onFailure {
-                Toast.makeText(requireContext(), "상품 목록을 불러올 수 없어요", Toast.LENGTH_SHORT).show()
+            }.onFailure { error ->
+                if (handleSellerAuthFailure(error, session)) return@onFailure
+                if (error is HttpException && error.code() == 404) {
+                    renderItems(emptyList())
+                    return@onFailure
+                }
+                Log.e(TAG, "Failed to load sale items", error)
+                toast("상품 목록을 불러올 수 없어요")
             }
         }
     }
 
     private fun renderItems(items: List<SaleItemApiResponse>) {
-        binding.saleItemsContainer.removeAllViews()
-        if (items.isEmpty()) {
-            binding.saleItemsContainer.addView(emptyView())
-            return
-        }
-        items.forEach { item ->
+        binding.saleItemsContainer.renderChildren(
+            items = items,
+            emptyView = ::emptyView,
+        ) { item ->
             val itemBinding = ItemSaleItemBinding.inflate(layoutInflater, binding.saleItemsContainer, false)
             itemBinding.tvItemEmoji.text = item.emoji
             itemBinding.tvItemName.text = item.name
             itemBinding.tvItemDetail.text =
-                "${"%,d원".format(item.discountedPrice)} · 잔여 ${item.remainingItems}/${item.totalItems}개 · ${item.pickupTimeSlot}"
+                "${item.discountedPrice.toWon()} · 잔여 ${item.remainingItems}/${item.totalItems}개 · ${item.displayPickupTime}"
 
-            val (statusText, statusBg, statusColor) = when (item.status) {
-                "AVAILABLE" -> Triple("판매중", R.drawable.bg_status_available, 0xFF2E7D32.toInt())
-                "SOLD_OUT" -> Triple("품절", R.drawable.bg_status_soldout, 0xFFE65100.toInt())
-                "CANCELLED" -> Triple("취소됨", R.drawable.bg_status_expired, 0xFF757575.toInt())
-                else -> Triple("종료", R.drawable.bg_status_expired, 0xFF9E9E9E.toInt())
+            val badge = item.saleStatus.badgeStyle(item.status)
+            itemBinding.tvItemStatus.text = badge.text
+            itemBinding.tvItemStatus.setTextColor(badge.textColor)
+            itemBinding.tvItemStatus.setBackgroundResource(badge.backgroundRes)
+
+            fun styleButton(btn: TextView, isActive: Boolean) {
+                val primaryColor = ContextCompat.getColor(requireContext(), R.color.primary)
+                if (isActive) {
+                    btn.setBackgroundResource(R.drawable.bg_button_primary)
+                    btn.setTextColor(0xFFFFFFFF.toInt())
+                } else {
+                    btn.setBackgroundResource(R.drawable.bg_button_outline)
+                    btn.setTextColor(primaryColor)
+                }
             }
-            itemBinding.tvItemStatus.text = statusText
-            itemBinding.tvItemStatus.setBackgroundResource(statusBg)
-            itemBinding.tvItemStatus.setTextColor(statusColor)
 
-            itemBinding.btnStatusAvailable.setOnClickListener { updateStatus(item.id, "AVAILABLE") }
-            itemBinding.btnStatusSoldout.setOnClickListener { updateStatus(item.id, "SOLD_OUT") }
+            itemBinding.btnEdit.setOnClickListener { showEditDialog(item) }
+            itemBinding.btnStatusAvailable.setOnClickListener { updateStatus(item.id, SaleStatus.Available.apiValue) }
+            itemBinding.btnStatusSoldout.setOnClickListener { updateStatus(item.id, SaleStatus.Paused.apiValue) }
+            val isFinal = item.saleStatus.isFinal
+            val isLegacyPaused = item.saleStatus == SaleStatus.SoldOut && item.remainingItems > 0
+            val isStatusChangeable = !isFinal && (item.saleStatus != SaleStatus.SoldOut || isLegacyPaused)
+            itemBinding.btnCancel.text = if (isFinal) "삭제" else "취소"
             itemBinding.btnCancel.setOnClickListener { confirmCancel(item) }
-            val isFinal = item.status == "CANCELLED" || item.status == "EXPIRED"
-            itemBinding.btnStatusAvailable.isEnabled = !isFinal
-            itemBinding.btnStatusSoldout.isEnabled = !isFinal
-            itemBinding.btnCancel.isEnabled = !isFinal
-            itemBinding.btnStatusAvailable.alpha = if (isFinal) 0.35f else 1f
-            itemBinding.btnStatusSoldout.alpha = if (isFinal) 0.35f else 1f
-            itemBinding.btnCancel.alpha = if (isFinal) 0.35f else 1f
+            styleButton(itemBinding.btnStatusAvailable, item.saleStatus == SaleStatus.Available)
+            styleButton(itemBinding.btnStatusSoldout, item.saleStatus == SaleStatus.Paused || isLegacyPaused)
+            styleButton(itemBinding.btnCancel, false)
+            itemBinding.btnStatusAvailable.isEnabled = isStatusChangeable
+            itemBinding.btnStatusSoldout.isEnabled = isStatusChangeable
+            itemBinding.btnCancel.isEnabled = true
+            itemBinding.btnStatusAvailable.alpha = if (isStatusChangeable) 1f else 0.35f
+            itemBinding.btnStatusSoldout.alpha = if (isStatusChangeable) 1f else 0.35f
+            itemBinding.btnCancel.alpha = 1f
 
-            binding.saleItemsContainer.addView(itemBinding.root)
+            val isUnavailable = item.saleStatus in setOf(SaleStatus.Paused, SaleStatus.SoldOut)
+            itemBinding.tvItemEmoji.alpha = if (isUnavailable) 0.35f else 1f
+            itemBinding.tvItemName.alpha = if (isUnavailable) 0.55f else 1f
+            itemBinding.tvItemDetail.alpha = if (isUnavailable) 0.45f else 1f
+            itemBinding.tvItemName.paintFlags = if (isUnavailable) {
+                itemBinding.tvItemName.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+            } else {
+                itemBinding.tvItemName.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+            }
+
+            itemBinding.root
         }
     }
 
     private fun updateStatus(itemId: Long, status: String) {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             runCatching {
-                RetrofitClient.api.updateSaleStatus(itemId, UpdateSaleStatusRequest(status))
+                RetrofitClient.api.updateSaleStatusCompat(RetrofitClient.memberId, itemId, UpdateSaleStatusRequest(status))
                 loadSaleItems()
-            }.onFailure {
-                Toast.makeText(requireContext(), "상태 변경에 실패했어요", Toast.LENGTH_SHORT).show()
+            }.onFailure { error ->
+                if (handleSellerAuthFailure(error, session)) return@onFailure
+                Log.e(TAG, "Failed to update sale status. itemId=$itemId status=$status", error)
+                toast(statusUpdateErrorMessage(error))
             }
         }
     }
 
-    private fun confirmCancel(item: SaleItemApiResponse) {
+    private fun statusUpdateErrorMessage(error: Throwable): String {
+        if (error !is HttpException) return "상태 변경에 실패했어요."
+        val detail = error.response()?.errorBody()?.string()
+            ?.let { Regex(""""message"\s*:\s*"([^"]+)"""").find(it)?.groupValues?.getOrNull(1) }
+        return if (detail.isNullOrBlank()) "상태 변경에 실패했어요. (${error.code()})"
+        else "상태 변경에 실패했어요. $detail"
+    }
+
+    private fun showEditDialog(item: SaleItemApiResponse) {
+        val dialogView = android.widget.LinearLayout(requireContext()).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding(48, 24, 48, 8)
+        }
+        val etPrice = android.widget.EditText(requireContext()).apply {
+            hint = "할인가 (원)"
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER
+            setText(item.discountedPrice.toString())
+        }
+        val etQty = android.widget.EditText(requireContext()).apply {
+            hint = "잔여 수량"
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER
+            setText(item.remainingItems.toString())
+        }
+        val tvPickup = android.widget.TextView(requireContext()).apply {
+            text = "픽업시간: ${item.displayPickupTime}"
+            textSize = 13f
+            setTextColor(requireContext().getColor(R.color.text_sub))
+            setPadding(0, 12, 0, 4)
+        }
+        dialogView.addView(etPrice)
+        dialogView.addView(etQty)
+        dialogView.addView(tvPickup)
+
         AlertDialog.Builder(requireContext())
-            .setTitle("상품 취소")
-            .setMessage("${item.name} 상품 등록을 취소할까요?")
-            .setPositiveButton("취소하기") { _, _ ->
-                lifecycleScope.launch {
+            .setTitle("상품 수정")
+            .setView(dialogView)
+            .setPositiveButton("저장") { _, _ ->
+                val newPrice = etPrice.text?.toString()?.toIntOrNull()
+                val newQty = etQty.text?.toString()?.toIntOrNull()
+                if (newPrice == null || newPrice <= 0) {
+                    toast("올바른 가격을 입력해주세요")
+                    return@setPositiveButton
+                }
+                if (newQty == null || newQty < 0) {
+                    toast("올바른 수량을 입력해주세요")
+                    return@setPositiveButton
+                }
+                viewLifecycleOwner.lifecycleScope.launch {
                     runCatching {
-                        RetrofitClient.api.cancelSaleItem(item.id)
-                        Toast.makeText(requireContext(), "상품이 취소됐어요", Toast.LENGTH_SHORT).show()
+                        RetrofitClient.api.updateSaleItemCompat(
+                            RetrofitClient.memberId,
+                            item.id,
+                            UpdateSaleItemRequest(discountPrice = newPrice, quantityRemaining = newQty),
+                        )
+                        toast("수정됐어요")
                         loadSaleItems()
                     }.onFailure {
-                        Toast.makeText(requireContext(), "취소에 실패했어요", Toast.LENGTH_SHORT).show()
+                        toast("수정에 실패했어요")
                     }
                 }
             }
@@ -124,12 +217,50 @@ class ProductFragment : Fragment() {
             .show()
     }
 
-    private fun emptyView(): View = android.widget.TextView(requireContext()).apply {
-        text = "오늘 등록된 상품이 없어요\n아래 '+ 상품 등록' 버튼을 눌러 등록해보세요"
-        textSize = 13f
-        setTextColor(ContextCompat.getColor(requireContext(), R.color.text_sub))
-        gravity = android.view.Gravity.CENTER
-        setPadding(0, 60, 0, 60)
+    private fun confirmCancel(item: SaleItemApiResponse) {
+        val isFinal = item.saleStatus.isFinal
+        val actionLabel = if (isFinal) "삭제" else "취소"
+        AlertDialog.Builder(requireContext())
+            .setTitle("상품 $actionLabel")
+            .setMessage("${item.name} 상품을 ${actionLabel}할까요?")
+            .setPositiveButton("${actionLabel}하기") { _, _ ->
+                viewLifecycleOwner.lifecycleScope.launch {
+                    runCatching {
+                        if (isFinal) {
+                            RetrofitClient.api.cancelSaleItemCompat(RetrofitClient.memberId, item.id)
+                        } else {
+                            RetrofitClient.api.updateSaleStatusCompat(
+                                RetrofitClient.memberId,
+                                item.id,
+                                UpdateSaleStatusRequest(SaleStatus.Expired.apiValue),
+                            )
+                        }
+                        toast("상품이 ${actionLabel}됐어요")
+                        loadSaleItems()
+                    }.onFailure { error ->
+                        if (handleSellerAuthFailure(error, session)) return@onFailure
+                        Log.e(TAG, "Failed to cancel/delete sale item. itemId=${item.id}", error)
+                        toast(actionFailureMessage(actionLabel, error))
+                    }
+                }
+            }
+            .setNegativeButton("닫기", null)
+            .show()
+    }
+
+    private fun actionFailureMessage(actionLabel: String, error: Throwable): String {
+        if (error !is HttpException) return "${actionLabel}에 실패했어요."
+        val detail = error.response()?.errorBody()?.string()
+            ?.let { Regex(""""message"\s*:\s*"([^"]+)"""").find(it)?.groupValues?.getOrNull(1) }
+        return if (detail.isNullOrBlank()) "${actionLabel}에 실패했어요. (${error.code()})"
+        else "${actionLabel}에 실패했어요. $detail"
+    }
+
+    private fun emptyView(): View = requireContext().emptyTextView(
+        message = "오늘 등록된 상품이 없어요\n아래 '+ 상품 등록' 버튼을 눌러 등록해보세요",
+        verticalPaddingDp = 60,
+        centered = true,
+    ).apply {
         layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
     }
 

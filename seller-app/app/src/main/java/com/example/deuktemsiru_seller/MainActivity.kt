@@ -2,7 +2,6 @@ package com.example.deuktemsiru_seller
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -10,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.deuktemsiru_seller.data.SessionManager
 import com.example.deuktemsiru_seller.databinding.ActivityMainBinding
+import com.example.deuktemsiru_seller.network.OrderStatus
 import com.example.deuktemsiru_seller.network.RetrofitClient
 import com.example.deuktemsiru_seller.ui.auth.LoginActivity
 import com.example.deuktemsiru_seller.ui.home.HomeFragment
@@ -28,6 +28,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var session: SessionManager
     private var orderBadgeCount = 0
+    var orderCompletedRequested = false
+    var pendingOrderTab: Int? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,15 +58,31 @@ class MainActivity : AppCompatActivity() {
         setupBottomNav()
 
         if (savedInstanceState == null) {
-            loadFragment(HomeFragment())
+            if (intent.getBooleanExtra("navigate_to_product", false)) {
+                binding.bottomNav.selectedItemId = R.id.nav_product
+            } else {
+                loadFragment(HomeFragment())
+            }
         }
         refreshOrderBadge()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (session.isLoggedIn()) refreshOrderBadge()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (intent.getBooleanExtra("navigate_to_product", false)) {
+            binding.bottomNav.selectedItemId = R.id.nav_product
+        }
     }
 
     // ── 로그아웃 (MyPageFragment에서 호출) ──────────────────────
     fun logout() {
         lifecycleScope.launch {
-            runCatching { RetrofitClient.api.logout() }
+            runCatching { RetrofitClient.api.logout(RetrofitClient.memberId) }
             session.clear()
             navigateToLogin()
         }
@@ -72,7 +90,25 @@ class MainActivity : AppCompatActivity() {
 
     // ── 화면 이동 ─────────────────────────────────────────────
     fun navigateToOrder() {
-        binding.bottomNav.selectedItemId = R.id.nav_order
+        navigateTo(R.id.nav_order)
+    }
+
+    fun navigateToOrderTab(tabIndex: Int) {
+        pendingOrderTab = tabIndex
+        navigateTo(R.id.nav_order)
+    }
+
+    fun navigateToOrderCompleted() {
+        orderCompletedRequested = true
+        navigateTo(R.id.nav_order)
+    }
+
+    fun navigateToSales() {
+        navigateTo(R.id.nav_sales)
+    }
+
+    fun navigateToProduct() {
+        navigateTo(R.id.nav_product)
     }
 
     fun navigateToNotification() {
@@ -87,17 +123,21 @@ class MainActivity : AppCompatActivity() {
         loadFragment(StoreFragment())
     }
 
+    private fun navigateTo(itemId: Int) {
+        binding.bottomNav.selectedItemId = itemId
+    }
+
     // ── 내부 유틸 ─────────────────────────────────────────────
     private fun navigateToLogin() {
         startActivity(Intent(this, LoginActivity::class.java))
         finish()
     }
 
-    private fun refreshOrderBadge() {
+    fun refreshOrderBadge() {
         lifecycleScope.launch {
             runCatching {
-                val response = RetrofitClient.api.getOrders()
-                orderBadgeCount = response.data?.count { it.status == "PENDING" } ?: 0
+                val response = RetrofitClient.api.getOrders(RetrofitClient.memberId)
+                orderBadgeCount = response.data?.count { it.orderStatus == OrderStatus.Pending } ?: 0
                 updateOrderBadge()
             }
         }

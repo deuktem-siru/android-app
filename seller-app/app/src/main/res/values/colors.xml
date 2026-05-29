@@ -3,29 +3,36 @@
     <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>
 
-    <!-- Primary -->
-    <color name="primary">#FFFF5C2E</color>
-    <color name="primary_light">#FFFFEDE5</color>
-    <color name="primary_dark">#FF6B2B12</color>
+    <!-- Primary: 딥 틸 + 인디고 조합 -->
+    <color name="primary">#0B7A6E</color>
+    <color name="primary_light">#C8EDEA</color>
+    <color name="primary_dark">#065950</color>
 
-    <!-- Status -->
-    <color name="online">#FF00C853</color>
-    <color name="success">#FF2E7D32</color>
-    <color name="success_light">#FFE8F5E9</color>
-    <color name="danger">#FFFF3B30</color>
-    <color name="warning">#FFFF8800</color>
+    <!-- Status: 구매자 앱 보조/상태 색과 통일 -->
+    <color name="online">#FF1D7F52</color>
+    <color name="success">#FF1D7F52</color>
+    <color name="success_light">#FFB0F1D2</color>
+    <color name="danger">#FFE53935</color>
+    <color name="warning">#FFE07800</color>
 
-    <!-- Surface -->
-    <color name="surface">#FFF4F5F7</color>
-    <color name="surface_alt">#FFF8F8F8</color>
+    <!-- Surface: 구매자 앱의 따뜻한 오프화이트 계열과 통일 -->
+    <color name="surface">#FFF5EFEC</color>
+    <color name="surface_alt">#FFFFFBF8</color>
+    <color name="secondary_button_bg">#E3F1EC</color>
 
     <!-- Text -->
-    <color name="text">#FF1A1A1A</color>
-    <color name="text_sub">#FF666666</color>
-    <color name="text_muted">#FF999999</color>
+    <color name="text">#FF1A1110</color>
+    <color name="text_sub">#FF534341</color>
+    <color name="text_muted">#FF998C8A</color>
 
     <!-- Border -->
-    <color name="border">#FFE5E5E5</color>
+    <color name="border">#FFE2C8C0</color>
+    <color name="border_light">#FFEDE8E5</color>
+
+    <!-- Neumorphic surface lighting -->
+    <color name="neu_highlight">#FFFFFFFF</color>
+    <color name="neu_shadow">#24C7B3AD</color>
+    <color name="neu_shadow_strong">#33B69C94</color>
 
     <!-- Transparent -->
     <color name="transparent">#00000000</color>

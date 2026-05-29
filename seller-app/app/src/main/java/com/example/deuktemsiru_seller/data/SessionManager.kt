@@ -1,10 +1,13 @@
 package com.example.deuktemsiru_seller.data
 
 import android.content.Context
+import android.content.SharedPreferences
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import com.example.deuktemsiru_seller.network.RetrofitClient
 
 class SessionManager(context: Context) {
-    private val prefs = context.getSharedPreferences("seller_session", Context.MODE_PRIVATE)
+    private val prefs = securePrefs(context, "seller_session")
 
     init {
         restoreToken()
@@ -14,9 +17,19 @@ class SessionManager(context: Context) {
         }
     }
 
+    var isMockSession: Boolean
+        get() = prefs.getBoolean("isMockSession", false)
+        set(value) {
+            prefs.edit().putBoolean("isMockSession", value).apply()
+            RetrofitClient.isMockSession = value
+        }
+
     var memberId: Long
         get() = prefs.getLong("memberId", -1L)
-        set(value) { prefs.edit().putLong("memberId", value).apply() }
+        set(value) {
+            prefs.edit().putLong("memberId", value).apply()
+            RetrofitClient.memberId = value
+        }
 
     var nickname: String
         get() = prefs.getString("nickname", "") ?: ""
@@ -41,11 +54,34 @@ class SessionManager(context: Context) {
     fun restoreToken() {
         RetrofitClient.accessToken = accessToken.takeIf { it.isNotBlank() }
         RetrofitClient.refreshToken = refreshToken.takeIf { it.isNotBlank() }
+        RetrofitClient.memberId = memberId
+        RetrofitClient.isMockSession = isMockSession
     }
 
     fun clear() {
         prefs.edit().clear().apply()
         RetrofitClient.accessToken = null
         RetrofitClient.refreshToken = null
+        RetrofitClient.memberId = -1L
+        RetrofitClient.onTokenRefreshed = null
+        RetrofitClient.isMockSession = false
+    }
+}
+
+private fun securePrefs(context: Context, name: String): SharedPreferences {
+    val appContext = context.applicationContext
+    return runCatching {
+        val masterKey = MasterKey.Builder(appContext)
+            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+            .build()
+        EncryptedSharedPreferences.create(
+            appContext,
+            name,
+            masterKey,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+        )
+    }.getOrElse {
+        appContext.getSharedPreferences(name, Context.MODE_PRIVATE)
     }
 }

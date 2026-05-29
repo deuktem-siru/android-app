@@ -15,7 +15,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="새 마감 메뉴를 입력하세요"
-            android:textSize="16sp"
+            android:textSize="19sp"
             android:textColor="@color/text"
             android:fontFamily="sans-serif-medium"
             android:layout_marginBottom="16dp" />
@@ -25,6 +25,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:background="@drawable/bg_card_white"
+    android:elevation="2dp"
             android:padding="16dp"
             android:layout_marginBottom="16dp">
 
@@ -32,7 +33,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="메뉴명"
-                android:textSize="13sp"
+                android:textSize="16sp"
                 android:textColor="@color/text_sub"
                 android:layout_marginBottom="8dp" />
 
@@ -48,14 +49,38 @@
                 android:paddingEnd="14dp"
                 android:textColor="@color/text"
                 android:textColorHint="@color/text_muted"
-                android:textSize="15sp"
+                android:textSize="18sp"
+                android:layout_marginBottom="14dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="메뉴 이모지 (선택)"
+                android:textSize="16sp"
+                android:textColor="@color/text_sub"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/et_emoji"
+                android:layout_width="72dp"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_rounded_muted"
+                android:hint="🍽️"
+                android:inputType="text"
+                android:maxLength="2"
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp"
+                android:singleLine="true"
+                android:textColor="@color/text"
+                android:textColorHint="@color/text_muted"
+                android:textSize="29sp"
                 android:layout_marginBottom="14dp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="메뉴 이미지"
-                android:textSize="13sp"
+                android:textSize="16sp"
                 android:textColor="@color/text_sub"
                 android:layout_marginBottom="8dp" />
 
@@ -82,7 +107,7 @@
                     android:layout_gravity="center"
                     android:gravity="center"
                     android:text="+ 이미지 업로드"
-                    android:textSize="14sp"
+                    android:textSize="17sp"
                     android:textColor="@color/primary"
                     android:fontFamily="sans-serif-medium" />
 
@@ -92,7 +117,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="정상가"
-                android:textSize="13sp"
+                android:textSize="16sp"
                 android:textColor="@color/text_sub"
                 android:layout_marginBottom="8dp" />
 
@@ -109,14 +134,14 @@
                 android:singleLine="true"
                 android:textColor="@color/text"
                 android:textColorHint="@color/text_muted"
-                android:textSize="15sp"
+                android:textSize="18sp"
                 android:layout_marginBottom="14dp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="원가 (선택)"
-                android:textSize="13sp"
+                android:textSize="16sp"
                 android:textColor="@color/text_sub"
                 android:layout_marginBottom="8dp" />
 
@@ -133,14 +158,14 @@
                 android:singleLine="true"
                 android:textColor="@color/text"
                 android:textColorHint="@color/text_muted"
-                android:textSize="15sp"
+                android:textSize="18sp"
                 android:layout_marginBottom="14dp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="알레르기 정보 (선택)"
-                android:textSize="13sp"
+                android:textSize="16sp"
                 android:textColor="@color/text_sub"
                 android:layout_marginBottom="8dp" />
 
@@ -156,7 +181,7 @@
                 android:singleLine="true"
                 android:textColor="@color/text"
                 android:textColorHint="@color/text_muted"
-                android:textSize="15sp" />
+                android:textSize="18sp" />
 
         </LinearLayout>
 
@@ -173,7 +198,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="등록할 메뉴"
-                android:textSize="13sp"
+                android:textSize="16sp"
                 android:textColor="@color/text_sub" />
 
             <TextView
@@ -181,7 +206,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="메뉴 정보를 입력해주세요"
-                android:textSize="13sp"
+                android:textSize="16sp"
                 android:textColor="@color/primary_dark"
                 android:fontFamily="sans-serif-medium" />
 

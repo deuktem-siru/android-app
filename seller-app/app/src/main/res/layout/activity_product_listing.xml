@@ -13,7 +13,7 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:paddingHorizontal="16dp"
-        android:background="@color/white">
+        android:background="@color/surface_alt">
 
         <TextView
             android:id="@+id/btn_back"
@@ -21,7 +21,7 @@
             android:layout_height="40dp"
             android:gravity="center"
             android:text="←"
-            android:textSize="20sp"
+            android:textSize="24sp"
             android:textColor="@color/text"
             android:clickable="true"
             android:focusable="true" />
@@ -32,8 +32,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="상품 등록"
-            android:textSize="16sp"
+            android:text="마감 상품 등록"
+            android:textSize="19sp"
             android:textColor="@color/text"
             android:fontFamily="sans-serif-medium" />
 
@@ -42,8 +42,8 @@
             android:layout_width="40dp"
             android:layout_height="wrap_content"
             android:gravity="end"
-            android:text="1/2"
-            android:textSize="13sp"
+            android:text="단계"
+            android:textSize="16sp"
             android:textColor="@color/text_sub" />
 
     </LinearLayout>
@@ -83,21 +83,23 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="16dp"
-        android:background="@color/white">
+        android:background="@color/surface_alt">
 
-        <Button
+        <TextView
             android:id="@+id/btn_prev"
             android:layout_width="0dp"
             android:layout_height="52dp"
             android:layout_weight="1"
             android:layout_marginEnd="8dp"
             android:background="@drawable/bg_button_outline"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:stateListAnimator="@null"
             android:text="이전"
-            android:textColor="@color/text"
-            android:textSize="14sp"
+            android:textColor="@color/primary_dark"
+            android:textSize="17sp"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
             android:visibility="gone" />
 
         <Button
@@ -106,13 +108,14 @@
             android:layout_height="52dp"
             android:layout_weight="1"
             android:background="@drawable/bg_button_primary"
+            android:backgroundTint="@null"
             android:insetTop="0dp"
             android:insetBottom="0dp"
             android:stateListAnimator="@null"
             android:text="다음"
             android:textColor="@color/white"
             android:fontFamily="sans-serif-medium"
-            android:textSize="14sp" />
+            android:textSize="17sp" />
 
     </LinearLayout>
 

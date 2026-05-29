@@ -16,13 +16,13 @@
         android:paddingEnd="20dp"
         android:paddingTop="16dp"
         android:paddingBottom="12dp"
-        android:background="@color/white">
+        android:background="@color/surface_alt">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="매출 분석"
-            android:textSize="18sp"
+            android:textSize="22sp"
             android:textColor="@color/text"
             android:fontFamily="sans-serif-medium" />
 
@@ -39,6 +39,19 @@
             android:orientation="vertical"
             android:padding="16dp">
 
+            <TextView
+                android:id="@+id/tvSalesInsight"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_work_strip"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="12dp"
+                android:text="오늘 매출 흐름과 인기 메뉴를 먼저 확인하세요"
+                android:textColor="@color/primary_dark"
+                android:textSize="16sp"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginBottom="12dp" />
+
             <!-- Period Toggle -->
             <LinearLayout
                 android:layout_width="match_parent"
@@ -53,7 +66,7 @@
                     android:layout_height="36dp"
                     android:gravity="center"
                     android:text="◀"
-                    android:textSize="13sp"
+                    android:textSize="16sp"
                     android:textColor="@color/text_sub" />
 
                 <LinearLayout
@@ -61,8 +74,21 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:orientation="horizontal"
-                    android:background="@drawable/bg_card_white"
+                    android:background="@drawable/bg_card_flat"
+                    android:elevation="0dp"
                     android:padding="4dp">
+
+                    <TextView
+                        android:id="@+id/tab_daily"
+                        android:layout_width="0dp"
+                        android:layout_height="34dp"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="일간"
+                        android:textSize="16sp"
+                        android:textColor="@color/white"
+                        android:fontFamily="sans-serif-medium"
+                        android:background="@drawable/bg_button_primary" />
 
                     <TextView
                         android:id="@+id/tab_weekly"
@@ -71,10 +97,8 @@
                         android:layout_weight="1"
                         android:gravity="center"
                         android:text="주간"
-                        android:textSize="13sp"
-                        android:textColor="@color/white"
-                        android:fontFamily="sans-serif-medium"
-                        android:background="@drawable/bg_button_primary" />
+                        android:textSize="16sp"
+                        android:textColor="@color/text_muted" />
 
                     <TextView
                         android:id="@+id/tab_monthly"
@@ -83,17 +107,7 @@
                         android:layout_weight="1"
                         android:gravity="center"
                         android:text="월간"
-                        android:textSize="13sp"
-                        android:textColor="@color/text_muted" />
-
-                    <TextView
-                        android:id="@+id/tab_yearly"
-                        android:layout_width="0dp"
-                        android:layout_height="34dp"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:text="연간"
-                        android:textSize="13sp"
+                        android:textSize="16sp"
                         android:textColor="@color/text_muted" />
 
                 </LinearLayout>
@@ -104,7 +118,7 @@
                     android:layout_height="36dp"
                     android:gravity="center"
                     android:text="▶"
-                    android:textSize="13sp"
+                    android:textSize="16sp"
                     android:textColor="@color/text_sub" />
 
             </LinearLayout>
@@ -115,7 +129,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=""
-                android:textSize="12sp"
+                android:textSize="14sp"
                 android:textColor="@color/text_sub"
                 android:layout_marginBottom="14dp" />
 
@@ -124,7 +138,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:background="@drawable/bg_card_white"
+                android:background="@drawable/bg_card_flat"
+                android:elevation="0dp"
                 android:padding="16dp"
                 android:layout_marginBottom="12dp">
 
@@ -140,7 +155,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="주간 매출"
-                        android:textSize="12sp"
+                        android:textSize="14sp"
                         android:textColor="@color/text_sub" />
 
                     <TextView
@@ -148,7 +163,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="로딩 중..."
-                        android:textSize="12sp"
+                        android:textSize="14sp"
                         android:textColor="@color/text_muted"
                         android:visibility="gone" />
 
@@ -159,7 +174,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="--"
-                    android:textSize="24sp"
+                    android:textSize="29sp"
                     android:textColor="@color/text"
                     android:fontFamily="sans-serif-medium"
                     android:layout_marginTop="4dp" />
@@ -187,7 +202,7 @@
                     android:layout_height="44dp"
                     android:gravity="center"
                     android:text="🌍"
-                    android:textSize="24sp" />
+                    android:textSize="29sp" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -200,7 +215,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="환경 기여"
-                        android:textSize="13sp"
+                        android:textSize="16sp"
                         android:textColor="#CCFFFFFF"
                         android:fontFamily="sans-serif-medium" />
 
@@ -209,7 +224,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="절감 폐기 --개"
-                        android:textSize="16sp"
+                        android:textSize="19sp"
                         android:textColor="@color/white"
                         android:fontFamily="sans-serif-medium"
                         android:layout_marginTop="4dp" />
@@ -219,7 +234,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="탄소 --kg 절감"
-                        android:textSize="13sp"
+                        android:textSize="16sp"
                         android:textColor="#CCFFFFFF"
                         android:layout_marginTop="2dp" />
 
@@ -228,14 +243,36 @@
             </LinearLayout>
 
             <!-- Top Menus Header -->
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="잘 팔리는 메뉴 TOP 3"
-                android:textSize="15sp"
-                android:textColor="@color/text"
-                android:fontFamily="sans-serif-medium"
-                android:layout_marginBottom="10dp" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="10dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="잘 팔리는 메뉴 TOP 3"
+                    android:textSize="18sp"
+                    android:textColor="@color/text"
+                    android:fontFamily="sans-serif-medium" />
+
+                <TextView
+                    android:id="@+id/btnToggleChart"
+                    android:layout_width="wrap_content"
+                    android:layout_height="28dp"
+                    android:gravity="center"
+                    android:paddingHorizontal="12dp"
+                    android:text="파이차트"
+                    android:textSize="14sp"
+                    android:textColor="@color/primary"
+                    android:background="@drawable/bg_rounded_primary_light"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+            </LinearLayout>
 
             <!-- Top Menus Container (dynamic) -->
             <LinearLayout
@@ -244,6 +281,14 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:layout_marginBottom="12dp" />
+
+            <!-- Pie Chart (initially hidden) -->
+            <com.example.deuktemsiru_seller.ui.sales.PieChartView
+                android:id="@+id/pieChart"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone" />
 
             <!-- Insight Box -->
             <LinearLayout
@@ -260,7 +305,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="💡 데이터를 불러오는 중이에요..."
-                    android:textSize="13sp"
+                    android:textSize="16sp"
                     android:textColor="@color/primary_dark" />
 
             </LinearLayout>

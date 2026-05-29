@@ -1,14 +1,11 @@
 package com.example.deuktemsiru_seller.ui.product
 
-import android.app.TimePickerDialog
 import android.content.Intent
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
+import android.app.TimePickerDialog
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -19,9 +16,24 @@ import com.example.deuktemsiru_seller.databinding.ActivityProductListingBinding
 import com.example.deuktemsiru_seller.databinding.ItemChooseMenuBinding
 import com.example.deuktemsiru_seller.network.MenuItemApiResponse
 import com.example.deuktemsiru_seller.network.RetrofitClient
-import com.example.deuktemsiru_seller.network.SaleItemRequest
+import com.example.deuktemsiru_seller.network.SaleItemCreateRequest
+import com.example.deuktemsiru_seller.network.deleteMenuCompat
 import com.example.deuktemsiru_seller.ui.registration.MenuRegistrationActivity
+import com.example.deuktemsiru_seller.util.PickupTimeState
+import com.example.deuktemsiru_seller.util.bindDiscountPresets
+import com.example.deuktemsiru_seller.util.discountPresetViews
+import com.example.deuktemsiru_seller.util.emptyTextView
+import com.example.deuktemsiru_seller.util.inflateInto
+import com.example.deuktemsiru_seller.util.loadMenuImage
+import com.example.deuktemsiru_seller.util.renderChildren
+import com.example.deuktemsiru_seller.util.refreshDiscountPresets
+import com.example.deuktemsiru_seller.util.setSelectedChip
+import com.example.deuktemsiru_seller.util.setupQuantityControls
+import com.example.deuktemsiru_seller.util.toWon
+import com.example.deuktemsiru_seller.util.toast
+import com.example.deuktemsiru_seller.util.visibleIf
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 class ProductListingActivity : AppCompatActivity() {
 
@@ -30,11 +42,11 @@ class ProductListingActivity : AppCompatActivity() {
     private var currentStep = 1
     private var menus: List<MenuItemApiResponse> = emptyList()
     private var selectedMenu: MenuItemApiResponse? = null
-    private var selectedDiscountRate = 60
+    private var selectedDiscountRate = 20
+    private var selectedPriceMode: String = "rate"
     private var selectedQuantity = 5
-    private var pickupStartMinutes = 16 * 60 + 30
-    private var pickupEndMinutes = 18 * 60
-    private var selectedPickupTimeSlot = "16:30-18:00"
+    private val pickupTime = PickupTimeState()
+    private var reloadMenusOnResume = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,13 +64,21 @@ class ProductListingActivity : AppCompatActivity() {
         loadMenus()
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (reloadMenusOnResume) {
+            reloadMenusOnResume = false
+            loadMenus()
+        }
+    }
+
     private fun loadMenus() {
         lifecycleScope.launch {
             try {
-                menus = RetrofitClient.api.getMenus().data ?: emptyList()
+                menus = RetrofitClient.api.getMenus(RetrofitClient.memberId).data ?: emptyList()
                 loadStep(1)
             } catch (e: Exception) {
-                Toast.makeText(this@ProductListingActivity, "메뉴를 불러올 수 없어요", Toast.LENGTH_SHORT).show()
+                toast("메뉴를 불러올 수 없어요")
                 finish()
             }
         }
@@ -66,44 +86,32 @@ class ProductListingActivity : AppCompatActivity() {
 
     private fun loadStep(step: Int) {
         currentStep = step
-        binding.progress1.setBackgroundResource(if (step >= 1) R.drawable.bg_progress_active else R.drawable.bg_progress_inactive)
-        binding.progress2.setBackgroundResource(if (step >= 2) R.drawable.bg_progress_active else R.drawable.bg_progress_inactive)
+        listOf(binding.progress1, binding.progress2).forEachIndexed { index, progress ->
+            progress.setBackgroundResource(if (step > index) R.drawable.bg_progress_active else R.drawable.bg_progress_inactive)
+        }
         binding.tvStepLabel.text = "$step/2"
         binding.stepContainer.removeAllViews()
 
-        if (step == 1) {
-            binding.btnPrev.visibility = View.GONE
-            binding.btnNext.text = "다음"
-            val stepView = LayoutInflater.from(this).inflate(R.layout.step_choose_menu, binding.stepContainer, false)
-            binding.stepContainer.addView(stepView)
-            setupStep1(stepView)
-        } else {
-            binding.btnPrev.visibility = View.VISIBLE
-            binding.btnNext.text = "상품 등록"
-            val stepView = LayoutInflater.from(this).inflate(R.layout.step_sale_details, binding.stepContainer, false)
-            binding.stepContainer.addView(stepView)
-            setupStep2(stepView)
+        val (layoutRes, nextText, setup) = when (step) {
+            1 -> Triple(R.layout.step_choose_menu, "다음", ::setupStep1)
+            else -> Triple(R.layout.step_sale_details, "상품 등록", ::setupStep2)
         }
+        binding.btnPrev.visibleIf(step > 1)
+        binding.btnNext.text = nextText
+        setup(layoutInflater.inflateInto(layoutRes, binding.stepContainer))
     }
 
     private fun setupStep1(view: View) {
         val container = view.findViewById<android.widget.LinearLayout>(R.id.menu_list_container)
-        container.removeAllViews()
-
-        if (menus.isEmpty()) {
-            val empty = TextView(this).apply {
-                text = "등록된 메뉴가 없어요. 먼저 메뉴를 추가해주세요."
-                textSize = 13f
-                setTextColor(getColor(R.color.text_sub))
-                setPadding(0, 16, 0, 16)
-            }
-            container.addView(empty)
-        } else {
-            menus.forEach { menu ->
+        container.renderChildren(
+            items = menus,
+            emptyView = { emptyTextView("등록된 메뉴가 없어요. 먼저 메뉴를 추가해주세요.") },
+        ) { menu ->
                 val itemBinding = ItemChooseMenuBinding.inflate(LayoutInflater.from(this), container, false)
-                itemBinding.tvMenuEmoji.text = menu.emoji
+                itemBinding.tvMenuEmoji.text = menu.displayEmoji
+                itemBinding.ivMenuImage.loadMenuImage(menu.imageUrl, itemBinding.tvMenuEmoji, this)
                 itemBinding.tvMenuName.text = menu.name
-                itemBinding.tvMenuPrice.text = "%,d원".format(menu.originalPrice)
+                itemBinding.tvMenuPrice.text = menu.originalPrice.toWon()
                 updateMenuSelection(itemBinding, menu == selectedMenu)
                 itemBinding.root.setOnClickListener {
                     selectedMenu = if (selectedMenu?.id == menu.id) null else menu
@@ -113,12 +121,22 @@ class ProductListingActivity : AppCompatActivity() {
                         updateMenuSelection(childBinding, selectedMenu?.id == menus[i].id)
                     }
                 }
-                container.addView(itemBinding.root)
-            }
+                itemBinding.root.setOnLongClickListener {
+                    confirmDeleteMenu(menu)
+                    true
+                }
+                itemBinding.btnDeleteMenu.setOnClickListener {
+                    confirmDeleteMenu(menu)
+                }
+                itemBinding.root
         }
 
-        view.findViewById<android.widget.Button>(R.id.btn_new_menu).setOnClickListener {
-            startActivity(Intent(this, MenuRegistrationActivity::class.java))
+        view.findViewById<TextView>(R.id.btn_new_menu).setOnClickListener {
+            reloadMenusOnResume = true
+            startActivity(
+                Intent(this, MenuRegistrationActivity::class.java)
+                    .putExtra(MenuRegistrationActivity.EXTRA_MENU_ONLY, true)
+            )
         }
     }
 
@@ -130,124 +148,217 @@ class ProductListingActivity : AppCompatActivity() {
 
     private fun setupStep2(view: View) {
         val menu = selectedMenu ?: return
-        view.findViewById<TextView>(R.id.tv_selected_emoji).text = menu.emoji
+        view.findViewById<TextView>(R.id.tv_selected_emoji).text = menu.displayEmoji
         view.findViewById<TextView>(R.id.tv_selected_name).text = menu.name
-        view.findViewById<TextView>(R.id.tv_selected_price).text = "정상가 %,d원".format(menu.originalPrice)
+        view.findViewById<TextView>(R.id.tv_selected_price).text = "정상가 ${menu.originalPrice.toWon()}"
+
+        val layoutRateMode = view.findViewById<android.widget.LinearLayout>(R.id.layout_rate_mode)
+        val layoutPriceMode = view.findViewById<android.widget.LinearLayout>(R.id.layout_price_mode)
+        val btnModeRate = view.findViewById<TextView>(R.id.btn_mode_rate)
+        val btnModePrice = view.findViewById<TextView>(R.id.btn_mode_price)
+
+        fun updateModeUI() {
+            if (selectedPriceMode == "rate") {
+                layoutRateMode.visibleIf(true)
+                layoutPriceMode.visibleIf(false)
+            } else {
+                layoutRateMode.visibleIf(false)
+                layoutPriceMode.visibleIf(true)
+            }
+            btnModeRate.setSelectedChip(selectedPriceMode == "rate")
+            btnModePrice.setSelectedChip(selectedPriceMode == "price")
+        }
+
+        updateModeUI()
+        btnModeRate.setOnClickListener { selectedPriceMode = "rate"; updateModeUI() }
+        btnModePrice.setOnClickListener { selectedPriceMode = "price"; updateModeUI() }
 
         val etDiscount = view.findViewById<android.widget.EditText>(R.id.et_discount_rate)
         val tvDiscounted = view.findViewById<TextView>(R.id.tv_discounted_price)
-        val tvQty = view.findViewById<TextView>(R.id.tv_quantity)
-        val tvStart = view.findViewById<TextView>(R.id.tv_pickup_start)
-        val tvEnd = view.findViewById<TextView>(R.id.tv_pickup_end)
-
-        val presetIds = mapOf(
-            30 to view.findViewById<TextView>(R.id.preset_30),
-            50 to view.findViewById<TextView>(R.id.preset_50),
-            60 to view.findViewById<TextView>(R.id.preset_60),
-            70 to view.findViewById<TextView>(R.id.preset_70),
-        )
+        val presetIds = discountPresetViews(view)
 
         fun refreshDiscount() {
             val rate = etDiscount.text?.toString()?.toIntOrNull() ?: 0
             selectedDiscountRate = rate
             val discounted = menu.originalPrice * (100 - rate) / 100
-            tvDiscounted.text = "%,d원".format(discounted)
-            presetIds.forEach { (d, tv) ->
-                val sel = d == rate
-                tv.setBackgroundResource(if (sel) R.drawable.bg_discount_preset_selected else R.drawable.bg_discount_preset_normal)
-                tv.setTextColor(getColor(if (sel) R.color.white else R.color.text_sub))
-            }
+            tvDiscounted.text = discounted.toWon()
+            refreshDiscountPresets(presetIds, rate)
         }
 
         etDiscount.setText(selectedDiscountRate.toString())
-        refreshDiscount()
-        etDiscount.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = refreshDiscount()
-            override fun afterTextChanged(s: Editable?) = Unit
-        })
-        presetIds.forEach { (d, tv) ->
-            tv.setOnClickListener {
-                selectedDiscountRate = d
-                etDiscount.setText(d.toString())
-                etDiscount.setSelection(etDiscount.text?.length ?: 0)
-            }
+        etDiscount.bindDiscountPresets(
+            presets = presetIds,
+            selectedRate = { selectedDiscountRate },
+            onRateChanged = { selectedDiscountRate = it },
+            refresh = ::refreshDiscount,
+        )
+
+        setupQuantityControls(view, selectedQuantity) { selectedQuantity = it }
+
+        val containerStart = view.findViewById<android.widget.LinearLayout>(R.id.container_pickup_start)
+        val containerEnd = view.findViewById<android.widget.LinearLayout>(R.id.container_pickup_end)
+        val tvStart = view.findViewById<TextView>(R.id.tv_pickup_start)
+        val tvEnd = view.findViewById<TextView>(R.id.tv_pickup_end)
+        val chip30Min = view.findViewById<TextView>(R.id.chip_30min)
+        val chip1Hour = view.findViewById<TextView>(R.id.chip_1hour)
+        val chip2Hour = view.findViewById<TextView>(R.id.chip_2hour)
+
+        fun highlightContainer(active: android.widget.LinearLayout, inactive: android.widget.LinearLayout) {
+            active.setBackgroundResource(R.drawable.bg_card_primary_border)
+            inactive.setBackgroundResource(R.drawable.bg_rounded_muted)
         }
 
-        tvQty.text = selectedQuantity.toString()
-        view.findViewById<View>(R.id.btn_qty_minus).setOnClickListener {
-            if (selectedQuantity > 1) { selectedQuantity--; tvQty.text = selectedQuantity.toString() }
-        }
-        view.findViewById<View>(R.id.btn_qty_plus).setOnClickListener {
-            if (selectedQuantity < 99) { selectedQuantity++; tvQty.text = selectedQuantity.toString() }
+        fun refreshPickupViews() {
+            tvStart.text = pickupTime.startLabel
+            tvEnd.text = pickupTime.endLabel
         }
 
-        fun refreshPickup() {
-            tvStart.text = formatTime(pickupStartMinutes)
-            tvEnd.text = formatTime(pickupEndMinutes)
-            selectedPickupTimeSlot = "${formatTime(pickupStartMinutes)}-${formatTime(pickupEndMinutes)}"
+        fun showTimePicker(initialMinutes: Int, onPicked: (Int) -> Unit) {
+            TimePickerDialog(this, { _, hour, minute ->
+                onPicked(hour * 60 + minute)
+                refreshPickupViews()
+            }, initialMinutes / 60, initialMinutes % 60, true).show()
         }
-        refreshPickup()
 
-        view.findViewById<View>(R.id.container_pickup_start).setOnClickListener {
-            showTimePicker(pickupStartMinutes) { m ->
-                pickupStartMinutes = m
-                if (pickupEndMinutes <= pickupStartMinutes) pickupEndMinutes = (m + 30).coerceAtMost(23 * 60 + 59)
-                refreshPickup()
+        fun setDuration(minutes: Int) {
+            pickupTime.setDuration(minutes)
+            highlightContainer(containerEnd, containerStart)
+            refreshPickupViews()
+        }
+
+        containerStart.setOnClickListener {
+            highlightContainer(containerStart, containerEnd)
+            showTimePicker(pickupTime.startMinutes) { picked ->
+                pickupTime.startMinutes = picked
+                pickupTime.ensureEndAfterStart(minDurationMinutes = 60)
             }
         }
-        view.findViewById<View>(R.id.container_pickup_end).setOnClickListener {
-            showTimePicker(pickupEndMinutes) { m ->
-                if (m <= pickupStartMinutes) Toast.makeText(this, "마감 시간은 시작보다 늦어야 해요", Toast.LENGTH_SHORT).show()
-                else { pickupEndMinutes = m; refreshPickup() }
+        containerEnd.setOnClickListener {
+            highlightContainer(containerEnd, containerStart)
+            showTimePicker(pickupTime.endMinutes) { picked ->
+                if (picked <= pickupTime.startMinutes) {
+                    toast("마감 시간은 시작 시간보다 늦어야 해요.")
+                } else {
+                    pickupTime.endMinutes = picked
+                }
             }
         }
-        view.findViewById<View>(R.id.chip_30min).setOnClickListener { pickupEndMinutes = (pickupStartMinutes + 30).coerceAtMost(23 * 60 + 59); refreshPickup() }
-        view.findViewById<View>(R.id.chip_1hour).setOnClickListener { pickupEndMinutes = (pickupStartMinutes + 60).coerceAtMost(23 * 60 + 59); refreshPickup() }
-        view.findViewById<View>(R.id.chip_until_close).setOnClickListener {
-            pickupEndMinutes = 21 * 60
-            if (pickupEndMinutes <= pickupStartMinutes) pickupEndMinutes = (pickupStartMinutes + 30).coerceAtMost(23 * 60 + 59)
-            refreshPickup()
-        }
+        chip30Min.setOnClickListener { setDuration(30) }
+        chip1Hour.setOnClickListener { setDuration(60) }
+        chip2Hour.setOnClickListener { setDuration(120) }
+        refreshPickupViews()
     }
 
     private fun onNextClicked() {
-        if (currentStep == 1) {
-            if (selectedMenu == null) { Toast.makeText(this, "메뉴를 선택해주세요", Toast.LENGTH_SHORT).show(); return }
-            loadStep(2)
-        } else {
-            if (selectedDiscountRate !in 1..99) { Toast.makeText(this, "1~99 사이의 할인율을 입력해주세요", Toast.LENGTH_SHORT).show(); return }
-            registerProduct()
+        when {
+            currentStep == 1 && selectedMenu == null -> toast("메뉴를 선택해주세요")
+            currentStep == 1 -> loadStep(2)
+            validateSaleDetails() -> registerProduct()
         }
+    }
+
+    private fun validateSaleDetails(): Boolean {
+        if (selectedPriceMode == "rate" && selectedDiscountRate !in 1..99) {
+            toast("1~99 사이의 할인율을 입력해주세요")
+            return false
+        }
+        if (pickupTime.endMinutes <= pickupTime.startMinutes) {
+            toast("픽업 종료 시간이 시작 시간보다 늦어야 해요.")
+            return false
+        }
+        return true
     }
 
     private fun registerProduct() {
         val menu = selectedMenu ?: return
-        binding.btnNext.isEnabled = false
-        binding.btnNext.text = "등록 중..."
+        setSubmitting(true)
         lifecycleScope.launch {
             try {
-                RetrofitClient.api.createSaleItem(
-                    SaleItemRequest(
+                val discountPrice = resolveDiscountPrice(menu) ?: return@launch
+                val response = RetrofitClient.api.createSaleItem(
+                    RetrofitClient.memberId,
+                    SaleItemCreateRequest(
                         menuItemId = menu.id,
-                        discountRate = selectedDiscountRate,
-                        quantity = selectedQuantity,
-                        pickupTimeSlot = selectedPickupTimeSlot,
+                        name = menu.name,
+                        discountPrice = discountPrice,
+                        originalPrice = menu.originalPrice,
+                        quantityTotal = selectedQuantity,
+                        pickupStart = pickupTime.startLabel,
+                        pickupEnd = pickupTime.endLabel,
+                        availableDate = LocalDate.now().toString(),
                     ),
                 )
-                Toast.makeText(this@ProductListingActivity, "상품이 등록됐어요!", Toast.LENGTH_SHORT).show()
+                if (response.code !in 200..299 || response.data == null) {
+                    throw IllegalStateException(response.message)
+                }
+                toast("상품이 등록됐어요!")
+                val intent = android.content.Intent(this@ProductListingActivity, com.example.deuktemsiru_seller.MainActivity::class.java).apply {
+                    flags = android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP or android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    putExtra("navigate_to_product", true)
+                }
+                startActivity(intent)
                 finish()
             } catch (e: Exception) {
-                Toast.makeText(this@ProductListingActivity, "등록에 실패했어요", Toast.LENGTH_SHORT).show()
-                binding.btnNext.isEnabled = true
-                binding.btnNext.text = "상품 등록"
+                toast("등록에 실패했어요")
+                setSubmitting(false)
             }
         }
     }
 
-    private fun showTimePicker(initialMinutes: Int, onPicked: (Int) -> Unit) {
-        TimePickerDialog(this, { _, h, m -> onPicked(h * 60 + m) }, initialMinutes / 60, initialMinutes % 60, true).show()
+    private fun resolveDiscountPrice(menu: MenuItemApiResponse): Int? {
+        if (selectedPriceMode != "price") {
+            return menu.originalPrice * (100 - selectedDiscountRate) / 100
+        }
+        val stepView = binding.stepContainer.getChildAt(0) ?: return null
+        val price = stepView.findViewById<android.widget.EditText>(R.id.et_direct_price)
+            ?.text?.toString()?.toIntOrNull()
+        return when {
+            price == null -> {
+                toast("할인가를 입력해주세요")
+                setSubmitting(false)
+                null
+            }
+            price <= 0 || price >= menu.originalPrice -> {
+                toast("할인가는 정가보다 낮은 1원 이상이어야 해요.")
+                setSubmitting(false)
+                null
+            }
+            else -> price
+        }
     }
 
-    private fun formatTime(minutes: Int) = "%02d:%02d".format(minutes / 60, minutes % 60)
+    private fun setSubmitting(submitting: Boolean) {
+        binding.btnNext.isEnabled = !submitting
+        binding.btnNext.text = if (submitting) "등록 중..." else "상품 등록"
+    }
+
+    private fun confirmDeleteMenu(menu: MenuItemApiResponse) {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("메뉴 삭제")
+            .setMessage("${menu.name}을(를) 삭제할까요?")
+            .setPositiveButton("삭제") { _, _ ->
+                lifecycleScope.launch {
+                    runCatching {
+                        RetrofitClient.api.deleteMenuCompat(RetrofitClient.memberId, menu.id)
+                    }.onSuccess {
+                        if (selectedMenu?.id == menu.id) selectedMenu = null
+                        toast("메뉴가 삭제됐어요")
+                        loadMenus()
+                    }.onFailure { error ->
+                        android.util.Log.e("ProductListingActivity", "Failed to delete menu id=${menu.id}", error)
+                        toast(deleteMenuErrorMessage(error))
+                    }
+                }
+            }
+            .setNegativeButton("취소", null)
+            .show()
+    }
+
+    private fun deleteMenuErrorMessage(error: Throwable): String {
+        if (error !is retrofit2.HttpException) return "메뉴 삭제에 실패했어요."
+        val detail = error.response()?.errorBody()?.string()
+            ?.let { Regex(""""message"\s*:\s*"([^"]+)"""").find(it)?.groupValues?.getOrNull(1) }
+        return if (detail.isNullOrBlank()) "메뉴 삭제에 실패했어요. (${error.code()})"
+        else "메뉴 삭제에 실패했어요. $detail"
+    }
 }

@@ -2,7 +2,6 @@ package com.example.deuktemsiru_seller.ui.auth
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -11,13 +10,16 @@ import com.example.deuktemsiru_seller.MainActivity
 import com.example.deuktemsiru_seller.data.SessionManager
 import com.example.deuktemsiru_seller.databinding.ActivityLoginBinding
 import com.example.deuktemsiru_seller.network.DebugLoginRequest
-import com.example.deuktemsiru_seller.network.KakaoLoginRequest
+import com.example.deuktemsiru_seller.network.LoginData
 import com.example.deuktemsiru_seller.network.RetrofitClient
+import com.example.deuktemsiru_seller.util.toast
+import com.example.deuktemsiru_seller.util.visibleIf
 import com.kakao.sdk.auth.model.OAuthToken
 import com.kakao.sdk.common.model.ClientError
 import com.kakao.sdk.common.model.ClientErrorCause
 import com.kakao.sdk.user.UserApiClient
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 class LoginActivity : AppCompatActivity() {
 
@@ -38,27 +40,46 @@ class LoginActivity : AppCompatActivity() {
         }
 
         if (BuildConfig.DEBUG) {
-            binding.btnKakaoLogin.text = "디버그 로그인으로 시작하기"
+            binding.layoutDebugForm.visibleIf(true)
+        }
+
+        binding.btnLogin.setOnClickListener {
+            val id = binding.etLoginId.text?.toString()?.trim() ?: ""
+            if (id.isBlank()) {
+                toast("디버그 ID 또는 판매자 이메일을 입력해주세요")
+                return@setOnClickListener
+            }
+            if (id == "mock") {
+                mockLogin()
+            } else {
+                debugLogin(id)
+            }
         }
 
         binding.btnKakaoLogin.setOnClickListener {
-            if (BuildConfig.DEBUG) debugLogin() else startKakaoLogin()
+            startKakaoLogin()
         }
     }
 
-    private fun debugLogin() {
+    private fun mockLogin() {
+        session.isMockSession = true
+        session.memberId = 1L
+        session.nickname = "남산 베이커리"
+        session.accessToken = "mock-access-token"
+        session.refreshToken = "mock-refresh-token"
+        navigateToMain()
+    }
+
+    private fun debugLogin(loginId: String) {
+        session.isMockSession = false
         setLoading(true)
         lifecycleScope.launch {
             runCatching {
-                RetrofitClient.api.debugLogin(DebugLoginRequest())
+                RetrofitClient.api.debugLogin(DebugLoginRequest(email = loginId.toDebugSellerEmail()))
             }.onSuccess { response ->
                 val loginData = response.data
                 if (loginData != null) {
-                    session.memberId = loginData.member.memberId
-                    session.nickname = loginData.member.nickname
-                    session.accessToken = loginData.accessToken
-                    session.refreshToken = loginData.refreshToken
-                    navigateToMain()
+                    saveLoginData(loginData)
                 } else {
                     showError("디버그 로그인 응답이 올바르지 않습니다.")
                 }
@@ -68,6 +89,26 @@ class LoginActivity : AppCompatActivity() {
             setLoading(false)
         }
     }
+
+    private fun String.toDebugSellerEmail(): String {
+        val normalized = trim().lowercase(Locale.ROOT)
+        return debugSellerEmails[normalized] ?: trim()
+    }
+
+    private val debugSellerEmails = mapOf(
+        "bakery" to "bakery@test.com",
+        "oido" to "bakery@test.com",
+        "오이도" to "bakery@test.com",
+        "cafe" to "cafe@siheung.test",
+        "baegot" to "cafe@siheung.test",
+        "배곧" to "cafe@siheung.test",
+        "bunsik" to "bunsik@siheung.test",
+        "정왕" to "bunsik@siheung.test",
+        "dosirak" to "dosirak@siheung.test",
+        "은행" to "dosirak@siheung.test",
+        "mart" to "mart@siheung.test",
+        "목감" to "mart@siheung.test",
+    )
 
     private fun startKakaoLogin() {
         setLoading(true)
@@ -95,7 +136,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun handleKakaoError(error: Throwable) {
         if (!error.isUserCancelled()) {
-            Toast.makeText(this, "카카오 로그인 실패: ${error.message}", Toast.LENGTH_SHORT).show()
+            toast("카카오 로그인 실패: ${error.message}")
         }
         setLoading(false)
     }
@@ -104,16 +145,15 @@ class LoginActivity : AppCompatActivity() {
         lifecycleScope.launch {
             runCatching {
                 RetrofitClient.api.kakaoLogin(
-                    KakaoLoginRequest(kakaoAccessToken = kakaoAccessToken, role = "SELLER")
+                    com.example.deuktemsiru_seller.network.KakaoLoginRequest(
+                        kakaoAccessToken = kakaoAccessToken,
+                        role = "SELLER",
+                    )
                 )
             }.onSuccess { response ->
                 val loginData = response.data
                 if (loginData != null) {
-                    session.memberId = loginData.member.memberId
-                    session.nickname = loginData.member.nickname
-                    session.accessToken = loginData.accessToken
-                    session.refreshToken = loginData.refreshToken
-                    navigateToMain()
+                    saveLoginData(loginData)
                 } else {
                     showError("로그인 응답이 올바르지 않습니다.")
                 }
@@ -129,15 +169,30 @@ class LoginActivity : AppCompatActivity() {
         finish()
     }
 
+    private fun saveLoginData(loginData: LoginData) {
+        if (!loginData.member.role.equals("SELLER", ignoreCase = true)) {
+            session.clear()
+            showError("판매자 계정으로 로그인해주세요.")
+            return
+        }
+        session.memberId = loginData.member.memberId
+        session.nickname = loginData.member.nickname
+        session.accessToken = loginData.accessToken
+        session.refreshToken = loginData.refreshToken
+        navigateToMain()
+    }
+
     private fun Throwable.isUserCancelled() =
         this is ClientError && reason == ClientErrorCause.Cancelled
 
     private fun setLoading(loading: Boolean) {
-        binding.progressBar.visibility = if (loading) View.VISIBLE else View.GONE
+        binding.progressBar.visibleIf(loading)
         binding.btnKakaoLogin.isEnabled = !loading
+        binding.btnLogin.isEnabled = !loading
+        binding.etLoginId.isEnabled = !loading
     }
 
     private fun showError(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+        toast(message, Toast.LENGTH_LONG)
     }
 }

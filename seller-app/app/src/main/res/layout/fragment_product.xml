@@ -15,14 +15,14 @@
         android:paddingEnd="20dp"
         android:paddingTop="16dp"
         android:paddingBottom="12dp"
-        android:background="@color/white">
+        android:background="@color/surface_alt">
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="상품 관리"
-            android:textSize="18sp"
+            android:textSize="22sp"
             android:textColor="@color/text"
             android:fontFamily="sans-serif-medium" />
 
@@ -31,12 +31,13 @@
             android:layout_width="wrap_content"
             android:layout_height="38dp"
             android:background="@drawable/bg_button_primary"
+            android:backgroundTint="@null"
             android:insetTop="0dp"
             android:insetBottom="0dp"
             android:stateListAnimator="@null"
-            android:text="+ 상품 등록"
+            android:text="마감 상품 등록"
             android:textColor="@color/white"
-            android:textSize="13sp" />
+            android:textSize="16sp" />
 
     </LinearLayout>
 

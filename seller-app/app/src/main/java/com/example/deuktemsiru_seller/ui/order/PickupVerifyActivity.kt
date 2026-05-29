@@ -1,39 +1,45 @@
 package com.example.deuktemsiru_seller.ui.order
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.view.View
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.deuktemsiru_seller.data.SessionManager
 import com.example.deuktemsiru_seller.databinding.ActivityPickupVerifyBinding
+import com.example.deuktemsiru_seller.network.ConfirmPickupRequest
+import com.example.deuktemsiru_seller.network.OrderApiResponse
 import com.example.deuktemsiru_seller.network.RetrofitClient
-import com.example.deuktemsiru_seller.network.UpdateOrderStatusRequest
+import com.example.deuktemsiru_seller.util.toast
+import com.example.deuktemsiru_seller.util.toWon
+import com.example.deuktemsiru_seller.util.visibleIf
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 class PickupVerifyActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityPickupVerifyBinding
     private lateinit var session: SessionManager
     private var currentOrderId: Long? = null
+    private var currentPickupCode: String? = null
 
     private val cameraPermission = registerForActivityResult(
         androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
     ) { granted ->
-        if (granted) launchQrScan() else Toast.makeText(this, "카메라 권한이 필요해요", Toast.LENGTH_SHORT).show()
+        if (granted) launchQrScan() else toast("카메라 권한이 필요해요")
     }
 
     private val qrLauncher = registerForActivityResult(ScanContract()) { result ->
         val code = result.contents
         if (!code.isNullOrBlank()) {
-            binding.etPickupCode.setText(code)
-            verifyCode(code)
+            val normalizedCode = code.toPickupCode()
+            binding.etPickupCode.setText(normalizedCode)
+            verifyCode(normalizedCode)
         }
     }
 
@@ -49,8 +55,12 @@ class PickupVerifyActivity : AppCompatActivity() {
         session = SessionManager(this)
         binding.btnBack.setOnClickListener { finish() }
         binding.btnVerify.setOnClickListener {
-            val code = binding.etPickupCode.text?.toString()?.trim().orEmpty()
-            if (code.isBlank()) { Toast.makeText(this, "픽업 코드를 입력해주세요", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
+            val code = binding.etPickupCode.text?.toString().orEmpty().toPickupCode()
+            if (code.isBlank()) {
+                showStatus("픽업 코드를 입력해주세요", success = false)
+                return@setOnClickListener
+            }
+            binding.etPickupCode.setText(code)
             verifyCode(code)
         }
         binding.btnScanQr.setOnClickListener {
@@ -76,36 +86,83 @@ class PickupVerifyActivity : AppCompatActivity() {
 
     private fun verifyCode(code: String) {
         binding.btnVerify.isEnabled = false
-        binding.cardResult.visibility = View.GONE
+        binding.cardResult.visibleIf(false)
+        binding.cardCompleted.visibleIf(false)
+        binding.tvVerifyStatus.visibleIf(false)
+
         lifecycleScope.launch {
             try {
-                val order = RetrofitClient.api.verifyPickupCode(code).data ?: return@launch
-                currentOrderId = order.id
-                binding.tvResultTitle.text = "✓ 주문 확인됨"
-                binding.tvResultTitle.setTextColor(getColor(android.R.color.holo_green_dark))
-                binding.tvResultOrderNumber.text = "주문번호: ${order.orderNumber}"
-                binding.tvResultItems.text = "상품: ${order.items.joinToString(", ") { "${it.emoji} ${it.name} ${it.quantity}개" }}"
-                binding.tvResultAmount.text = "결제금액: %,d원".format(order.totalAmount)
-                binding.cardResult.visibility = View.VISIBLE
+                val response = RetrofitClient.api.verifyPickupCode(RetrofitClient.memberId, code)
+                val order = response.data
+                if (order != null) {
+                    currentOrderId = order.id
+                    currentPickupCode = code
+                    showStatus("✓ 확인되었습니다", success = true)
+                    populateResultCard(order)
+                    binding.cardResult.visibleIf(true)
+                } else {
+                    showStatus("✗ 미확인되었습니다", success = false)
+                }
             } catch (e: Exception) {
-                Toast.makeText(this@PickupVerifyActivity, "픽업 코드를 찾을 수 없어요", Toast.LENGTH_SHORT).show()
+                showStatus("✗ 픽업 코드를 찾을 수 없어요", success = false)
             } finally {
                 binding.btnVerify.isEnabled = true
             }
         }
     }
 
+    private fun String.toPickupCode(): String =
+        trim().uppercase(Locale.ROOT)
+
+    private fun populateResultCard(order: OrderApiResponse) {
+        binding.tvResultTitle.text = "주문 확인됨"
+        binding.tvResultTitle.setTextColor(getColor(android.R.color.holo_green_dark))
+        binding.tvResultCustomerName.text = order.customerName?.let { "고객: $it" } ?: ""
+        binding.tvResultOrderNumber.text = "주문번호: ${order.orderNumber}"
+        binding.tvResultItems.text = "상품: ${order.items.joinToString(", ") { "${it.emoji} ${it.name} ${it.quantity}개" }}"
+        binding.tvResultAmount.text = "결제금액: ${order.totalAmount.toWon()}"
+    }
+
     private fun completePickup(orderId: Long) {
+        val code = currentPickupCode ?: run { showStatus("픽업 코드를 확인해주세요", success = false); return }
         lifecycleScope.launch {
             try {
-                RetrofitClient.api.updateOrderStatus(orderId, UpdateOrderStatusRequest("COMPLETED"))
-                Toast.makeText(this@PickupVerifyActivity, "픽업 완료 처리됐어요!", Toast.LENGTH_SHORT).show()
-                binding.cardResult.visibility = View.GONE
+                val completedOrder = RetrofitClient.api
+                    .confirmPickup(orderId, RetrofitClient.memberId, ConfirmPickupRequest(code))
+                    .data
+                binding.cardResult.visibleIf(false)
                 binding.etPickupCode.setText("")
                 currentOrderId = null
+                currentPickupCode = null
+
+                if (completedOrder != null) {
+                    showCompletedCard(completedOrder)
+                } else {
+                    showStatus("픽업 완료 처리됐어요!", success = true)
+                }
             } catch (e: Exception) {
-                Toast.makeText(this@PickupVerifyActivity, "완료 처리에 실패했어요", Toast.LENGTH_SHORT).show()
+                showStatus("완료 처리에 실패했어요", success = false)
             }
         }
+    }
+
+    private fun showCompletedCard(order: OrderApiResponse) {
+        val firstItem = order.items.firstOrNull()
+        binding.tvCompletedEmoji.text = firstItem?.emoji ?: "🛍️"
+        binding.tvCompletedName.text = firstItem?.let {
+            if (order.items.size > 1) "${it.name} 외 ${order.items.size - 1}개" else it.name
+        } ?: order.orderNumber
+        binding.tvCompletedAmount.text = order.totalAmount.toWon()
+        binding.cardCompleted.visibleIf(true)
+        showStatus("픽업 완료 처리됐어요!", success = true)
+    }
+
+    private fun showStatus(message: String, success: Boolean) {
+        binding.tvVerifyStatus.text = message
+        binding.tvVerifyStatus.setTextColor(
+            if (success) getColor(android.R.color.holo_green_dark)
+            else getColor(android.R.color.holo_red_dark)
+        )
+        binding.tvVerifyStatus.visibleIf(true)
     }
 }

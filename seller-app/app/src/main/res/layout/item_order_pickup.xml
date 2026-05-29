@@ -4,9 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="@drawable/bg_card_white"
+    android:background="@drawable/bg_list_item_bottom"
     android:padding="16dp"
-    android:layout_marginBottom="10dp">
+    android:layout_marginBottom="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,7 +18,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="픽업 대기"
-            android:textSize="11sp"
+            android:textSize="13sp"
             android:textColor="@color/warning"
             android:fontFamily="sans-serif-medium"
             android:background="@drawable/bg_rounded_warning"
@@ -33,7 +33,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text=""
-            android:textSize="12sp"
+            android:textSize="14sp"
             android:textColor="@color/text_sub"
             android:fontFamily="monospace"
             android:layout_marginStart="8dp" />
@@ -43,7 +43,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text=""
-            android:textSize="12sp"
+            android:textSize="14sp"
             android:textColor="@color/text_sub"
             android:fontFamily="monospace" />
 
@@ -60,7 +60,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="픽업 시간  "
-            android:textSize="12sp"
+            android:textSize="14sp"
             android:textColor="@color/text_sub" />
 
         <TextView
@@ -68,7 +68,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text=""
-            android:textSize="13sp"
+            android:textSize="16sp"
             android:textColor="@color/text"
             android:fontFamily="sans-serif-medium" />
 
@@ -89,7 +89,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text=""
-            android:textSize="13sp"
+            android:textSize="16sp"
             android:textColor="@color/text" />
 
         <TextView
@@ -97,7 +97,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text=""
-            android:textSize="14sp"
+            android:textSize="17sp"
             android:textColor="@color/text"
             android:fontFamily="sans-serif-medium" />
 
@@ -106,12 +106,13 @@
     <Button
         android:id="@+id/btn_complete"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="46dp"
         android:text="픽업 완료"
-        android:textSize="13sp"
+        android:textSize="18sp"
         android:textColor="@color/white"
         android:fontFamily="sans-serif-medium"
-        android:background="@drawable/bg_button_dark"
+        android:background="@drawable/bg_button_primary"
+        android:backgroundTint="@null"
         android:layout_marginTop="12dp"
         android:insetTop="0dp"
         android:insetBottom="0dp"

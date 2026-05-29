@@ -23,7 +23,7 @@
             android:paddingEnd="20dp"
             android:paddingTop="16dp"
             android:paddingBottom="12dp"
-            android:background="@color/white">
+            android:background="@color/surface_alt">
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -47,7 +47,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="영업 중"
-                        android:textSize="12sp"
+                        android:textSize="14sp"
                         android:textColor="@color/online"
                         android:fontFamily="sans-serif-medium" />
 
@@ -58,7 +58,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text=""
-                    android:textSize="18sp"
+                    android:textSize="22sp"
                     android:textColor="@color/text"
                     android:fontFamily="sans-serif-medium"
                     android:layout_marginTop="2dp" />
@@ -68,31 +68,272 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text=""
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     android:textColor="@color/text_sub"
                     android:layout_marginTop="2dp" />
 
             </LinearLayout>
 
             <!-- Bell icon -->
-            <TextView
+            <ImageButton
                 android:id="@+id/btn_bell"
                 android:layout_width="44dp"
                 android:layout_height="44dp"
-                android:gravity="center"
-                android:text="🔔"
-                android:textSize="20sp"
-                android:background="@drawable/bg_card_white"
+                android:background="@drawable/bg_icon_button"
+                android:contentDescription="알림"
+                android:padding="10dp"
+                android:scaleType="center"
+                android:src="@drawable/ic_bell"
                 android:clickable="true"
                 android:focusable="true" />
 
             <ImageView
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
                 android:layout_marginStart="10dp"
                 android:contentDescription="시흥시 BI"
                 android:scaleType="fitCenter"
                 android:src="@drawable/img_siheung_bi" />
+
+        </LinearLayout>
+
+        <!-- Sales Card (promoted to top) -->
+        <LinearLayout
+            android:id="@+id/card_sales"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_sales_card"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="20dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="12dp"
+            android:elevation="6dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <!-- Title row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="오늘 매출 요약"
+                    android:textSize="14sp"
+                    android:textColor="#AAFFFFFF"
+                    android:fontFamily="sans-serif-medium"
+                    android:letterSpacing="0.04" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="매출 분석 →"
+                    android:textSize="13sp"
+                    android:textColor="#77FFFFFF" />
+
+            </LinearLayout>
+
+            <!-- Amount (full width) -->
+            <TextView
+                android:id="@+id/tv_today_sales"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0원"
+                android:textSize="43sp"
+                android:textColor="@color/white"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginTop="10dp" />
+
+            <!-- Comparison row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="6dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="어제 대비"
+                    android:textSize="13sp"
+                    android:textColor="#88FFFFFF" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="↑ +23%"
+                    android:textSize="14sp"
+                    android:textColor="@color/white"
+                    android:fontFamily="sans-serif-medium"
+                    android:background="@drawable/bg_pill_translucent"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp" />
+
+            </LinearLayout>
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#22FFFFFF"
+                android:layout_marginTop="18dp"
+                android:layout_marginBottom="16dp" />
+
+            <!-- 3 stats bottom -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/section_sales_count"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <TextView
+                        android:id="@+id/tv_today_orders"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0건"
+                        android:textSize="22sp"
+                        android:textColor="@color/white"
+                        android:fontFamily="sans-serif-medium" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="판매"
+                        android:textSize="13sp"
+                        android:textColor="#AAFFFFFF"
+                        android:layout_marginTop="3dp" />
+
+                </LinearLayout>
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:background="#22FFFFFF" />
+
+                <LinearLayout
+                    android:id="@+id/section_waste"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="18개"
+                        android:textSize="22sp"
+                        android:textColor="@color/white"
+                        android:fontFamily="sans-serif-medium" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="절약 폐기"
+                        android:textSize="13sp"
+                        android:textColor="#AAFFFFFF"
+                        android:layout_marginTop="3dp" />
+
+                </LinearLayout>
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:background="#22FFFFFF" />
+
+                <LinearLayout
+                    android:id="@+id/section_loyal"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="2명"
+                        android:textSize="22sp"
+                        android:textColor="@color/white"
+                        android:fontFamily="sans-serif-medium" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="신규 단골"
+                        android:textSize="13sp"
+                        android:textColor="#AAFFFFFF"
+                        android:layout_marginTop="3dp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Dual Action Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="4dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_register_menu"
+                android:layout_width="match_parent"
+                android:layout_height="62dp"
+                android:text="마감 상품 등록"
+                android:textSize="18sp"
+                android:textColor="@color/white"
+                android:fontFamily="sans-serif-medium"
+                app:backgroundTint="@color/primary"
+                app:cornerRadius="14dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:stateListAnimator="@null" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_send_notification"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="단골 알림"
+                android:textSize="15sp"
+                android:textColor="@color/primary"
+                android:fontFamily="sans-serif-medium"
+                app:backgroundTint="#E3F1EC"
+                app:cornerRadius="14dp"
+                android:layout_marginTop="12dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:stateListAnimator="@null" />
 
         </LinearLayout>
 
@@ -114,10 +355,14 @@
             android:visibility="gone">
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="📢"
-                android:textSize="16sp"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:text="!"
+                android:textSize="17sp"
+                android:textColor="@color/primary"
+                android:fontFamily="sans-serif-medium"
+                android:gravity="center"
+                android:background="@drawable/bg_rounded_primary_light"
                 android:layout_marginEnd="10dp" />
 
             <LinearLayout
@@ -130,7 +375,7 @@
                     android:id="@+id/tv_notice_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="13sp"
+                    android:textSize="16sp"
                     android:textColor="@color/text"
                     android:fontFamily="sans-serif-medium" />
 
@@ -139,7 +384,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:textSize="12sp"
+                    android:textSize="14sp"
                     android:textColor="@color/text_sub" />
 
             </LinearLayout>
@@ -147,39 +392,52 @@
         </LinearLayout>
 
         <!-- Reservation Overview Card -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="16dp"
+            android:text="오늘 처리할 일"
+            android:textColor="@color/text"
+            android:textSize="18sp"
+            android:fontFamily="sans-serif-medium" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:background="@drawable/bg_card_white"
+            android:background="@drawable/bg_home_summary_card"
+            android:elevation="0dp"
             android:paddingVertical="14dp"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:layout_marginTop="10dp"
-            android:clickable="true"
-            android:focusable="true">
+            android:layout_marginTop="10dp">
 
             <LinearLayout
+                android:id="@+id/section_order_new"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical"
-                android:gravity="center">
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true">
 
                 <TextView
                     android:id="@+id/tv_reservation_new"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0"
-                    android:textSize="18sp"
-                    android:textColor="@color/primary_dark"
+                    android:textSize="22sp"
+                    android:textColor="@color/text"
                     android:fontFamily="sans-serif-medium" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="신규"
-                    android:textSize="11sp"
+                    android:text="신규 주문"
+                    android:textSize="13sp"
                     android:textColor="@color/text_sub"
                     android:layout_marginTop="2dp" />
 
@@ -188,29 +446,32 @@
             <View
                 android:layout_width="1dp"
                 android:layout_height="match_parent"
-                android:background="@color/text_muted" />
+                android:background="@color/border" />
 
             <LinearLayout
+                android:id="@+id/section_order_preparing"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical"
-                android:gravity="center">
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true">
 
                 <TextView
                     android:id="@+id/tv_reservation_preparing"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0"
-                    android:textSize="18sp"
+                    android:textSize="22sp"
                     android:textColor="@color/text"
                     android:fontFamily="sans-serif-medium" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="준비중"
-                    android:textSize="11sp"
+                    android:text="준비 중"
+                    android:textSize="13sp"
                     android:textColor="@color/text_sub"
                     android:layout_marginTop="2dp" />
 
@@ -219,29 +480,32 @@
             <View
                 android:layout_width="1dp"
                 android:layout_height="match_parent"
-                android:background="@color/text_muted" />
+                android:background="@color/border" />
 
             <LinearLayout
+                android:id="@+id/section_order_pickup"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical"
-                android:gravity="center">
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true">
 
                 <TextView
                     android:id="@+id/tv_reservation_pickup"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0"
-                    android:textSize="18sp"
+                    android:textSize="22sp"
                     android:textColor="@color/text"
                     android:fontFamily="sans-serif-medium" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="픽업대기"
-                    android:textSize="11sp"
+                    android:text="픽업 대기"
+                    android:textSize="13sp"
                     android:textColor="@color/text_sub"
                     android:layout_marginTop="2dp" />
 
@@ -249,216 +513,35 @@
 
         </LinearLayout>
 
-        <!-- Sales Gradient Card -->
+        <!-- Pickup Verify Button -->
         <LinearLayout
-            android:id="@+id/card_sales"
+            android:id="@+id/btn_pickup_verify_home"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/bg_gradient_primary_card"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:paddingTop="20dp"
-            android:paddingBottom="20dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginTop="16dp"
-            android:clickable="true"
-            android:focusable="true">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="오늘 매출"
-                android:textSize="13sp"
-                android:textColor="#CCFFFFFF"
-                android:fontFamily="sans-serif-medium" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginTop="4dp">
-
-                <TextView
-                    android:id="@+id/tv_today_sales"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="142,300원"
-                    android:textSize="28sp"
-                    android:textColor="@color/white"
-                    android:fontFamily="sans-serif-medium" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="+23% ↑"
-                    android:textSize="13sp"
-                    android:textColor="#CCFFFFFF"
-                    android:background="@drawable/bg_rounded_primary"
-                    android:paddingStart="8dp"
-                    android:paddingEnd="8dp"
-                    android:paddingTop="4dp"
-                    android:paddingBottom="4dp" />
-
-            </LinearLayout>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="어제 대비"
-                android:textSize="11sp"
-                android:textColor="#99FFFFFF"
-                android:layout_marginTop="2dp" />
-
-            <!-- Divider -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="#33FFFFFF"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="16dp" />
-
-            <!-- 3 stats bottom -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <TextView
-                        android:id="@+id/tv_today_orders"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="23건"
-                        android:textSize="16sp"
-                        android:textColor="@color/white"
-                        android:fontFamily="sans-serif-medium" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="판매"
-                        android:textSize="11sp"
-                        android:textColor="#AAFFFFFF"
-                        android:layout_marginTop="2dp" />
-
-                </LinearLayout>
-
-                <View
-                    android:layout_width="1dp"
-                    android:layout_height="match_parent"
-                    android:background="#33FFFFFF" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="18개"
-                        android:textSize="16sp"
-                        android:textColor="@color/white"
-                        android:fontFamily="sans-serif-medium" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="절약 폐기"
-                        android:textSize="11sp"
-                        android:textColor="#AAFFFFFF"
-                        android:layout_marginTop="2dp" />
-
-                </LinearLayout>
-
-                <View
-                    android:layout_width="1dp"
-                    android:layout_height="match_parent"
-                    android:background="#33FFFFFF" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="2명"
-                        android:textSize="16sp"
-                        android:textColor="@color/white"
-                        android:fontFamily="sans-serif-medium" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="신규 단골"
-                        android:textSize="11sp"
-                        android:textColor="#AAFFFFFF"
-                        android:layout_marginTop="2dp" />
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <!-- New Order Alert Card -->
-        <LinearLayout
-            android:id="@+id/card_new_order"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:background="@drawable/bg_card_primary_border"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:paddingTop="14dp"
-            android:paddingBottom="14dp"
+            android:layout_height="48dp"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginTop="12dp"
+            android:background="@drawable/bg_home_pickup_verify"
             android:clickable="true"
-            android:focusable="true">
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center"
+            android:orientation="horizontal">
 
             <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginEnd="12dp"
-                android:contentDescription="시흥시 캐릭터"
-                android:scaleType="fitCenter"
-                android:src="@drawable/img_siheung_character" />
-
-            <TextView
-                android:id="@+id/tv_new_order_alert"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/new_order_alert_empty"
-                android:textSize="14sp"
-                android:textColor="@color/text"
-                android:fontFamily="sans-serif-medium" />
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="6dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_qr_code"
+                app:tint="@color/white" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="확인하기 →"
-                android:textSize="13sp"
-                android:textColor="@color/primary"
+                android:text="픽업 QR/코드 확인"
+                android:textColor="@color/white"
+                android:textSize="17sp"
                 android:fontFamily="sans-serif-medium" />
 
         </LinearLayout>
@@ -484,16 +567,19 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/active_menus_title"
-                    android:textSize="15sp"
+                    android:textSize="18sp"
                     android:textColor="@color/text"
                     android:fontFamily="sans-serif-medium" />
 
                 <TextView
+                    android:id="@+id/tv_view_all_menus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="전체보기"
-                    android:textSize="12sp"
-                    android:textColor="@color/text_sub" />
+                    android:textSize="14sp"
+                    android:textColor="@color/text_sub"
+                    android:clickable="true"
+                    android:focusable="true" />
 
             </LinearLayout>
 
@@ -502,48 +588,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical" />
-
-        </LinearLayout>
-
-        <!-- Dual Action Buttons -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="8dp">
-
-            <Button
-                android:id="@+id/btn_register_menu"
-                android:layout_width="0dp"
-                android:layout_height="52dp"
-                android:layout_weight="1"
-                android:text="+ 마감 메뉴 등록"
-                android:textSize="14sp"
-                android:textColor="@color/white"
-                android:fontFamily="sans-serif-medium"
-                android:background="@drawable/bg_button_dark"
-                android:layout_marginEnd="6dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:stateListAnimator="@null" />
-
-            <Button
-                android:id="@+id/btn_send_notification"
-                android:layout_width="0dp"
-                android:layout_height="52dp"
-                android:layout_weight="1"
-                android:text="단골 알림 보내기"
-                android:textSize="14sp"
-                android:textColor="@color/text"
-                android:fontFamily="sans-serif-medium"
-                android:background="@drawable/bg_button_outline"
-                android:layout_marginStart="6dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:stateListAnimator="@null" />
 
         </LinearLayout>
 
