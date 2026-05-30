@@ -1,15 +1,13 @@
 package com.example.deuktemsiru_seller.ui.mypage
 
 import android.os.Bundle
-import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.deuktemsiru_seller.databinding.ActivitySettlementBinding
 import com.example.deuktemsiru_seller.network.RetrofitClient
 import com.example.deuktemsiru_seller.network.SettlementWithdrawRequest
+import com.example.deuktemsiru_seller.util.applySystemBarInsets
 import com.example.deuktemsiru_seller.util.toast
 import com.example.deuktemsiru_seller.util.toWon
 import kotlinx.coroutines.launch
@@ -20,17 +18,14 @@ class SettlementActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySettlementBinding
     private var currentOffset = 0
     private var currentSettlementAmount: Int? = null
+    private var currentStatus: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySettlementBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
-            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
-            insets
-        }
+        binding.root.applySystemBarInsets()
 
         binding.btnBack.setOnClickListener { finish() }
 
@@ -59,7 +54,9 @@ class SettlementActivity : AppCompatActivity() {
         binding.tvTotalSales.text = "—"
         binding.tvCommission.text = "—"
         binding.tvSettlementAmount.text = "—"
+        binding.tvSettlementStatus.text = "—"
         currentSettlementAmount = null
+        currentStatus = null
 
         lifecycleScope.launch {
             runCatching {
@@ -74,9 +71,11 @@ class SettlementActivity : AppCompatActivity() {
                 val settlement = settlementItem?.settlementAmount ?: 0
 
                 currentSettlementAmount = settlement
+                currentStatus = settlementItem?.status
                 binding.tvTotalSales.text = total.toWon()
                 binding.tvCommission.text = commission.toWon()
                 binding.tvSettlementAmount.text = settlement.toWon()
+                binding.tvSettlementStatus.text = statusLabel(settlementItem?.status)
             }.onFailure {
                 toast("데이터를 불러올 수 없어요.")
             }
@@ -91,6 +90,10 @@ class SettlementActivity : AppCompatActivity() {
         }
         if (numericAmount <= 0) {
             toast("출금 가능한 금액이 없어요.")
+            return
+        }
+        if (currentStatus == "COMPLETED") {
+            toast("이미 지급이 완료된 정산이에요.")
             return
         }
         val amount = numericAmount.toWon()
@@ -115,5 +118,12 @@ class SettlementActivity : AppCompatActivity() {
             }
             .setNegativeButton("취소", null)
             .show()
+    }
+
+    private fun statusLabel(status: String?) = when (status) {
+        "COMPLETED" -> "지급 완료"
+        "REJECTED" -> "반려됨 — 다시 신청할 수 있어요."
+        "PENDING" -> "신청 대기"
+        else -> "—"
     }
 }

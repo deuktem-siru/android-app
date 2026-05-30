@@ -21,7 +21,6 @@ data class DebugLoginRequest(
     val email: String? = null,
 )
 
-data class TokenRefreshRequest(val refreshToken: String)
 
 data class MemberSummary(
     val memberId: Long,
@@ -101,12 +100,6 @@ data class MenuItemApiResponse(
 ) {
     val displayEmoji: String get() = emoji ?: "🍽️"
 }
-
-data class MenuItemRequest(
-    val name: String,
-    val originalPrice: Int,
-    @SerializedName("allergenInfo") val allergyInfo: String? = null,
-)
 
 data class MenuItemUpdateRequest(
     val name: String? = null,

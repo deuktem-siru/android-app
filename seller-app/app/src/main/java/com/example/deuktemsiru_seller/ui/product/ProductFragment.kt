@@ -22,10 +22,8 @@ import com.example.deuktemsiru_seller.network.SaleStatus
 import com.example.deuktemsiru_seller.network.UpdateSaleItemRequest
 import com.example.deuktemsiru_seller.network.UpdateSaleStatusRequest
 import com.example.deuktemsiru_seller.network.badgeStyle
-import com.example.deuktemsiru_seller.network.cancelSaleItemCompat
-import com.example.deuktemsiru_seller.network.updateSaleItemCompat
-import com.example.deuktemsiru_seller.network.updateSaleStatusCompat
 import com.example.deuktemsiru_seller.util.emptyTextView
+import com.example.deuktemsiru_seller.util.failureMessage
 import com.example.deuktemsiru_seller.util.handleSellerAuthFailure
 import com.example.deuktemsiru_seller.util.renderChildren
 import com.example.deuktemsiru_seller.util.toast
@@ -93,14 +91,14 @@ class ProductFragment : Fragment() {
 
             val badge = item.saleStatus.badgeStyle(item.status)
             itemBinding.tvItemStatus.text = badge.text
-            itemBinding.tvItemStatus.setTextColor(badge.textColor)
+            itemBinding.tvItemStatus.setTextColor(requireContext().getColor(badge.textColorRes))
             itemBinding.tvItemStatus.setBackgroundResource(badge.backgroundRes)
 
             fun styleButton(btn: TextView, isActive: Boolean) {
                 val primaryColor = ContextCompat.getColor(requireContext(), R.color.primary)
                 if (isActive) {
                     btn.setBackgroundResource(R.drawable.bg_button_primary)
-                    btn.setTextColor(0xFFFFFFFF.toInt())
+                    btn.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
                 } else {
                     btn.setBackgroundResource(R.drawable.bg_button_outline)
                     btn.setTextColor(primaryColor)
@@ -142,23 +140,16 @@ class ProductFragment : Fragment() {
     private fun updateStatus(itemId: Long, status: String) {
         viewLifecycleOwner.lifecycleScope.launch {
             runCatching {
-                RetrofitClient.api.updateSaleStatusCompat(RetrofitClient.memberId, itemId, UpdateSaleStatusRequest(status))
+                RetrofitClient.api.updateSaleStatus(itemId, RetrofitClient.memberId, UpdateSaleStatusRequest(status))
                 loadSaleItems()
             }.onFailure { error ->
                 if (handleSellerAuthFailure(error, session)) return@onFailure
                 Log.e(TAG, "Failed to update sale status. itemId=$itemId status=$status", error)
-                toast(statusUpdateErrorMessage(error))
+                toast(error.failureMessage("상태 변경"))
             }
         }
     }
 
-    private fun statusUpdateErrorMessage(error: Throwable): String {
-        if (error !is HttpException) return "상태 변경에 실패했어요."
-        val detail = error.response()?.errorBody()?.string()
-            ?.let { Regex(""""message"\s*:\s*"([^"]+)"""").find(it)?.groupValues?.getOrNull(1) }
-        return if (detail.isNullOrBlank()) "상태 변경에 실패했어요. (${error.code()})"
-        else "상태 변경에 실패했어요. $detail"
-    }
 
     private fun showEditDialog(item: SaleItemApiResponse) {
         val dialogView = android.widget.LinearLayout(requireContext()).apply {
@@ -201,9 +192,9 @@ class ProductFragment : Fragment() {
                 }
                 viewLifecycleOwner.lifecycleScope.launch {
                     runCatching {
-                        RetrofitClient.api.updateSaleItemCompat(
-                            RetrofitClient.memberId,
+                        RetrofitClient.api.updateSaleItem(
                             item.id,
+                            RetrofitClient.memberId,
                             UpdateSaleItemRequest(discountPrice = newPrice, quantityRemaining = newQty),
                         )
                         toast("수정됐어요")
@@ -227,11 +218,11 @@ class ProductFragment : Fragment() {
                 viewLifecycleOwner.lifecycleScope.launch {
                     runCatching {
                         if (isFinal) {
-                            RetrofitClient.api.cancelSaleItemCompat(RetrofitClient.memberId, item.id)
+                            RetrofitClient.api.cancelSaleItem(item.id, RetrofitClient.memberId)
                         } else {
-                            RetrofitClient.api.updateSaleStatusCompat(
-                                RetrofitClient.memberId,
+                            RetrofitClient.api.updateSaleStatus(
                                 item.id,
+                                RetrofitClient.memberId,
                                 UpdateSaleStatusRequest(SaleStatus.Expired.apiValue),
                             )
                         }
@@ -240,7 +231,7 @@ class ProductFragment : Fragment() {
                     }.onFailure { error ->
                         if (handleSellerAuthFailure(error, session)) return@onFailure
                         Log.e(TAG, "Failed to cancel/delete sale item. itemId=${item.id}", error)
-                        toast(actionFailureMessage(actionLabel, error))
+                        toast(error.failureMessage(actionLabel))
                     }
                 }
             }
@@ -248,13 +239,6 @@ class ProductFragment : Fragment() {
             .show()
     }
 
-    private fun actionFailureMessage(actionLabel: String, error: Throwable): String {
-        if (error !is HttpException) return "${actionLabel}에 실패했어요."
-        val detail = error.response()?.errorBody()?.string()
-            ?.let { Regex(""""message"\s*:\s*"([^"]+)"""").find(it)?.groupValues?.getOrNull(1) }
-        return if (detail.isNullOrBlank()) "${actionLabel}에 실패했어요. (${error.code()})"
-        else "${actionLabel}에 실패했어요. $detail"
-    }
 
     private fun emptyView(): View = requireContext().emptyTextView(
         message = "오늘 등록된 상품이 없어요\n아래 '+ 상품 등록' 버튼을 눌러 등록해보세요",

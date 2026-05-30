@@ -1,7 +1,5 @@
 package com.example.deuktemsiru_seller.ui.registration
 
-import android.app.TimePickerDialog
-import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
@@ -12,22 +10,22 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.lifecycleScope
 import com.example.deuktemsiru_seller.R
 import com.example.deuktemsiru_seller.data.SessionManager
 import com.example.deuktemsiru_seller.databinding.ActivityMenuRegistrationBinding
 import com.example.deuktemsiru_seller.network.RetrofitClient
 import com.example.deuktemsiru_seller.util.PickupTimeState
+import com.example.deuktemsiru_seller.util.showTimePicker
+import com.example.deuktemsiru_seller.util.applySystemBarInsets
 import com.example.deuktemsiru_seller.util.bindDiscountPresets
 import com.example.deuktemsiru_seller.util.discountPresetViews
 import com.example.deuktemsiru_seller.util.inflateInto
 import com.example.deuktemsiru_seller.util.refreshDiscountPresets
 import com.example.deuktemsiru_seller.util.setupQuantityControls
-import com.example.deuktemsiru_seller.util.simpleTextWatcher
-import com.example.deuktemsiru_seller.util.toast
 import com.example.deuktemsiru_seller.util.toWon
+import com.example.deuktemsiru_seller.util.toast
 import com.example.deuktemsiru_seller.util.visibleIf
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaType
@@ -70,11 +68,7 @@ class MenuRegistrationActivity : AppCompatActivity() {
             binding.progressContainer.visibility = View.GONE
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+        binding.root.applySystemBarInsets()
 
         loadStep(1)
 
@@ -185,9 +179,8 @@ class MenuRegistrationActivity : AppCompatActivity() {
             }
         }
 
-        val watcher = simpleTextWatcher { refreshSummary() }
-        etName.addTextChangedListener(watcher)
-        etPrice.addTextChangedListener(watcher)
+        etName.doOnTextChanged { _, _, _, _ -> refreshSummary() }
+        etPrice.doOnTextChanged { _, _, _, _ -> refreshSummary() }
         refreshSummary()
     }
 
@@ -301,18 +294,16 @@ class MenuRegistrationActivity : AppCompatActivity() {
 
         view.findViewById<View>(R.id.container_pickup_start).setOnClickListener {
             showTimePicker(pickupTime.startMinutes) { minutes ->
-                pickupTime.startMinutes = minutes
-                pickupTime.ensureEndAfterStart(minDurationMinutes = 30)
+                pickupTime.updateStart(minutes, minDurationMinutes = 30)
                 refreshPickupViews(tvStart, tvEnd)
             }
         }
 
         view.findViewById<View>(R.id.container_pickup_end).setOnClickListener {
             showTimePicker(pickupTime.endMinutes) { minutes ->
-                if (minutes <= pickupTime.startMinutes) {
+                if (!pickupTime.updateEnd(minutes)) {
                     toast("마감 시간은 시작 시간보다 늦어야 해요.")
                 } else {
-                    pickupTime.endMinutes = minutes
                     refreshPickupViews(tvStart, tvEnd)
                 }
             }
@@ -331,12 +322,6 @@ class MenuRegistrationActivity : AppCompatActivity() {
             pickupTime.ensureEndAfterStart(minDurationMinutes = 30)
             refreshPickupViews(tvStart, tvEnd)
         }
-    }
-
-    private fun showTimePicker(initialMinutes: Int, onPicked: (Int) -> Unit) {
-        TimePickerDialog(this, { _, hourOfDay, minute ->
-            onPicked(hourOfDay * 60 + minute)
-        }, initialMinutes / 60, initialMinutes % 60, true).show()
     }
 
     private fun refreshPickupViews(tvStart: TextView, tvEnd: TextView) {
@@ -360,19 +345,10 @@ class MenuRegistrationActivity : AppCompatActivity() {
         return MultipartBody.Part.createFormData(partName, filename, body)
     }
 
-    private fun getDisplayName(uri: Uri): String? {
-        var cursor: Cursor? = null
-        return try {
-            cursor = contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
-            if (cursor != null && cursor.moveToFirst()) {
-                cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
-            } else {
-                null
-            }
-        } finally {
-            cursor?.close()
+    private fun getDisplayName(uri: Uri): String? =
+        contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
+            if (cursor.moveToFirst()) cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME)) else null
         }
-    }
 
     private fun updateProgressBar() {
         val progressViews = listOf(
@@ -391,13 +367,10 @@ class MenuRegistrationActivity : AppCompatActivity() {
     }
 
     private fun updateBottomButtons() {
-        when (currentStep) {
-            totalSteps -> {
-                binding.btnNext.text = if (menuOnlyMode) "메뉴 등록" else "등록하기"
-            }
-            else -> {
-                binding.btnNext.text = "다음 ($currentStep/${totalSteps})"
-            }
+        binding.btnNext.text = when {
+            currentStep != totalSteps -> "다음 ($currentStep/${totalSteps})"
+            menuOnlyMode -> "메뉴 등록"
+            else -> "등록하기"
         }
     }
 

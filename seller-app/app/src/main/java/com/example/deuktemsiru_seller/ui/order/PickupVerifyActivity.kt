@@ -1,18 +1,16 @@
 package com.example.deuktemsiru_seller.ui.order
 
 import android.Manifest
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.deuktemsiru_seller.data.SessionManager
 import com.example.deuktemsiru_seller.databinding.ActivityPickupVerifyBinding
 import com.example.deuktemsiru_seller.network.ConfirmPickupRequest
 import com.example.deuktemsiru_seller.network.OrderApiResponse
 import com.example.deuktemsiru_seller.network.RetrofitClient
+import com.example.deuktemsiru_seller.util.applySystemBarInsets
 import com.example.deuktemsiru_seller.util.toast
 import com.example.deuktemsiru_seller.util.toWon
 import com.example.deuktemsiru_seller.util.visibleIf
@@ -47,11 +45,7 @@ class PickupVerifyActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityPickupVerifyBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
-            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
-            insets
-        }
+        binding.root.applySystemBarInsets()
         session = SessionManager(this)
         binding.btnBack.setOnClickListener { finish() }
         binding.btnVerify.setOnClickListener {

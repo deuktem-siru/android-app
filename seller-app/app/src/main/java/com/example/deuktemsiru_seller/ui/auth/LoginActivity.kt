@@ -12,6 +12,7 @@ import com.example.deuktemsiru_seller.databinding.ActivityLoginBinding
 import com.example.deuktemsiru_seller.network.DebugLoginRequest
 import com.example.deuktemsiru_seller.network.LoginData
 import com.example.deuktemsiru_seller.network.RetrofitClient
+import com.example.deuktemsiru_seller.util.applySystemBarInsets
 import com.example.deuktemsiru_seller.util.toast
 import com.example.deuktemsiru_seller.util.visibleIf
 import com.kakao.sdk.auth.model.OAuthToken
@@ -26,10 +27,16 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
     private lateinit var session: SessionManager
 
+    private enum class LoginType {
+        KAKAO,
+        DEBUG,
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.root.applySystemBarInsets()
 
         session = SessionManager(this)
 
@@ -72,7 +79,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun debugLogin(loginId: String) {
         session.isMockSession = false
-        setLoading(true)
+        setLoading(true, LoginType.DEBUG)
         lifecycleScope.launch {
             runCatching {
                 RetrofitClient.api.debugLogin(DebugLoginRequest(email = loginId.toDebugSellerEmail()))
@@ -111,7 +118,7 @@ class LoginActivity : AppCompatActivity() {
     )
 
     private fun startKakaoLogin() {
-        setLoading(true)
+        setLoading(true, LoginType.KAKAO)
 
         val callback: (OAuthToken?, Throwable?) -> Unit = { token, error ->
             when {
@@ -185,11 +192,14 @@ class LoginActivity : AppCompatActivity() {
     private fun Throwable.isUserCancelled() =
         this is ClientError && reason == ClientErrorCause.Cancelled
 
-    private fun setLoading(loading: Boolean) {
-        binding.progressBar.visibleIf(loading)
+    private fun setLoading(loading: Boolean, type: LoginType? = null) {
         binding.btnKakaoLogin.isEnabled = !loading
         binding.btnLogin.isEnabled = !loading
         binding.etLoginId.isEnabled = !loading
+        binding.btnKakaoLogin.text =
+            if (loading && type == LoginType.KAKAO) "카카오 로그인 중..." else "카카오로 시작하기"
+        binding.btnLogin.text =
+            if (loading && type == LoginType.DEBUG) "디버그 로그인 중..." else "디버그 로그인"
     }
 
     private fun showError(message: String) {

@@ -23,7 +23,6 @@ import com.example.deuktemsiru_seller.util.dp
 import com.example.deuktemsiru_seller.network.MenuItemUpdateRequest
 import com.example.deuktemsiru_seller.network.RetrofitClient
 import com.example.deuktemsiru_seller.network.UpdateStoreRequest
-import com.example.deuktemsiru_seller.network.deleteMenuCompat
 import com.example.deuktemsiru_seller.util.emptyTextView
 import com.example.deuktemsiru_seller.util.loadMenuImage
 import com.example.deuktemsiru_seller.util.renderChildren
@@ -241,7 +240,7 @@ class StoreFragment : Fragment() {
             .setPositiveButton("삭제") { _, _ ->
                 viewLifecycleOwner.lifecycleScope.launch {
                     runCatching {
-                        RetrofitClient.api.deleteMenuCompat(RetrofitClient.memberId, menu.id)
+                        RetrofitClient.api.deleteMenu(menu.id, RetrofitClient.memberId)
                         toast("메뉴가 삭제됐어요.")
                         loadMenus()
                     }.onFailure {

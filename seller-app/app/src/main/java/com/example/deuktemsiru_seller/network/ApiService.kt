@@ -2,8 +2,6 @@ package com.example.deuktemsiru_seller.network
 
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
-import okhttp3.ResponseBody
-import retrofit2.Response
 import retrofit2.http.*
 
 interface ApiService {
@@ -15,11 +13,11 @@ interface ApiService {
     @POST("api/v1/auth/debug/login")
     suspend fun debugLogin(@Body req: DebugLoginRequest): ApiResponse<LoginData>
 
-    @POST("api/v1/auth/refresh")
-    suspend fun refresh(@Body req: TokenRefreshRequest): ApiResponse<TokenData>
-
     @POST("api/v1/auth/logout")
     suspend fun logout(@Query("memberId") memberId: Long): ApiResponse<Unit>
+
+    @POST("api/v1/fcm/token")
+    suspend fun registerFcmToken(@Body req: FcmTokenRequest): ApiResponse<Unit>
 
     // ── 멤버 ──────────────────────────────────────────────────
     @GET("api/v1/members/me")
@@ -35,32 +33,8 @@ interface ApiService {
         @Body req: SaleItemCreateRequest,
     ): ApiResponse<SaleItemApiResponse>
 
-    @Multipart
-    @POST("api/v1/sellers/products")
-    suspend fun createSaleItemWithImage(
-        @Query("sellerId") sellerId: Long,
-        @Part("name") name: RequestBody,
-        @Part("discountPrice") discountPrice: RequestBody,
-        @Part("originalPrice") originalPrice: RequestBody,
-        @Part("quantityTotal") quantityTotal: RequestBody,
-        @Part("pickupStart") pickupStart: RequestBody,
-        @Part("pickupEnd") pickupEnd: RequestBody,
-        @Part("availableDate") availableDate: RequestBody,
-        @Part("menuItemId") menuItemId: RequestBody?,
-        @Part("madeAt") madeAt: RequestBody?,
-        @Part("allergenInfo") allergenInfo: RequestBody?,
-        @Part images: List<MultipartBody.Part>?,
-    ): ApiResponse<SaleItemApiResponse>
-
     @PATCH("api/v1/sellers/products/{productId}/status")
     suspend fun updateSaleStatus(
-        @Path("productId") id: Long,
-        @Query("sellerId") sellerId: Long,
-        @Body req: UpdateSaleStatusRequest,
-    ): ApiResponse<SaleItemApiResponse>
-
-    @POST("api/v1/sellers/products/{productId}/status")
-    suspend fun updateSaleStatusViaPost(
         @Path("productId") id: Long,
         @Query("sellerId") sellerId: Long,
         @Body req: UpdateSaleStatusRequest,
@@ -73,34 +47,15 @@ interface ApiService {
         @Body req: UpdateSaleItemRequest,
     ): ApiResponse<SaleItemApiResponse>
 
-    @POST("api/v1/sellers/products/{productId}")
-    suspend fun updateSaleItemViaPost(
-        @Path("productId") id: Long,
-        @Query("sellerId") sellerId: Long,
-        @Body req: UpdateSaleItemRequest,
-    ): ApiResponse<SaleItemApiResponse>
-
     @DELETE("api/v1/sellers/products/{productId}")
     suspend fun cancelSaleItem(
         @Path("productId") id: Long,
         @Query("sellerId") sellerId: Long,
-    ): Response<ResponseBody>
-
-    @POST("api/v1/sellers/products/{productId}/delete")
-    suspend fun cancelSaleItemViaPost(
-        @Path("productId") id: Long,
-        @Query("sellerId") sellerId: Long,
-    ): Response<ResponseBody>
+    ): ApiResponse<Unit>
 
     // ── 메뉴 마스터 ────────────────────────────────────────────
     @GET("api/v1/sellers/menu-items")
     suspend fun getMenus(@Query("sellerId") sellerId: Long): ApiResponse<List<MenuItemApiResponse>>
-
-    @POST("api/v1/sellers/menu-items")
-    suspend fun addMenu(
-        @Query("sellerId") sellerId: Long,
-        @Body req: MenuItemRequest,
-    ): ApiResponse<MenuItemApiResponse>
 
     @Multipart
     @POST("api/v1/sellers/menu-items")
@@ -124,13 +79,7 @@ interface ApiService {
     suspend fun deleteMenu(
         @Path("menuItemId") menuItemId: Long,
         @Query("sellerId") sellerId: Long,
-    ): Response<ResponseBody>
-
-    @POST("api/v1/sellers/menu-items/{menuItemId}/delete")
-    suspend fun deleteMenuViaPost(
-        @Path("menuItemId") menuItemId: Long,
-        @Query("sellerId") sellerId: Long,
-    ): Response<ResponseBody>
+    ): ApiResponse<Unit>
 
     // ── 주문 ──────────────────────────────────────────────────
     @GET("api/v1/sellers/orders")
@@ -199,79 +148,4 @@ interface ApiService {
     ): ApiResponse<SalesApiResponse>
 }
 
-suspend fun ApiService.updateSaleStatusCompat(
-    sellerId: Long,
-    id: Long,
-    req: UpdateSaleStatusRequest,
-): ApiResponse<SaleItemApiResponse> =
-    runCatching {
-        withPostFallback(
-            primary = { updateSaleStatus(id, sellerId, req) },
-            fallback = { updateSaleStatusViaPost(id, sellerId, req) },
-        )
-    }.getOrElse { error ->
-        val legacyPauseRequest = UpdateSaleStatusRequest(SaleStatus.SoldOut.apiValue)
-        if (req.status == SaleStatus.Paused.apiValue && error.canRetryWithLegacyPauseStatus()) {
-            withPostFallback(
-                primary = { updateSaleStatus(id, sellerId, legacyPauseRequest) },
-                fallback = { updateSaleStatusViaPost(id, sellerId, legacyPauseRequest) },
-            )
-        } else {
-            throw error
-        }
-    }
-
-suspend fun ApiService.updateSaleItemCompat(
-    sellerId: Long,
-    id: Long,
-    req: UpdateSaleItemRequest,
-): ApiResponse<SaleItemApiResponse> =
-    withPostFallback(
-        primary = { updateSaleItem(id, sellerId, req) },
-        fallback = { updateSaleItemViaPost(id, sellerId, req) },
-    )
-
-suspend fun ApiService.cancelSaleItemCompat(
-    sellerId: Long,
-    id: Long,
-): Unit =
-    withRawPostFallback(
-        primary = { cancelSaleItem(id, sellerId).throwIfNotSuccessful() },
-        fallback = { cancelSaleItemViaPost(id, sellerId).throwIfNotSuccessful() },
-    )
-
-suspend fun ApiService.deleteMenuCompat(
-    sellerId: Long,
-    menuItemId: Long,
-): Unit =
-    withRawPostFallback(
-        primary = { deleteMenu(menuItemId, sellerId).throwIfNotSuccessful() },
-        fallback = { deleteMenuViaPost(menuItemId, sellerId).throwIfNotSuccessful() },
-    )
-
-private suspend fun <T> withPostFallback(
-    primary: suspend () -> ApiResponse<T>,
-    fallback: suspend () -> ApiResponse<T>,
-): ApiResponse<T> =
-    runCatching { primary() }.getOrElse { error ->
-        if (error.isEndpointCompatibilityError()) fallback() else throw error
-    }
-
-private suspend fun withRawPostFallback(
-    primary: suspend () -> Unit,
-    fallback: suspend () -> Unit,
-) {
-    runCatching { primary() }.getOrElse { error ->
-        if (error.isEndpointCompatibilityError()) fallback() else throw error
-    }
-}
-
-private fun Response<ResponseBody>.throwIfNotSuccessful() {
-    if (!isSuccessful) throw retrofit2.HttpException(this)
-}
-
-private fun Throwable.isEndpointCompatibilityError(): Boolean =
-    this is retrofit2.HttpException && code() in setOf(404, 405, 501)
-
-private fun Throwable.canRetryWithLegacyPauseStatus(): Boolean =
-    this is retrofit2.HttpException && code() in setOf(400, 409, 500)
+data class FcmTokenRequest(val token: String, val deviceInfo: String = "ANDROID")

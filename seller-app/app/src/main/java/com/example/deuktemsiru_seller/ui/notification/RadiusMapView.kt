@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
+import com.example.deuktemsiru_seller.R
 import com.example.deuktemsiru_seller.data.SessionManager
 import kotlin.math.min
 
@@ -15,7 +16,7 @@ class RadiusMapView @JvmOverloads constructor(
         set(value) { field = value; invalidate() }
 
     private val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0xFFE8F0E9.toInt()
+        color = context.getColor(R.color.map_land)
         style = Paint.Style.FILL
     }
     private val roadPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -24,20 +25,20 @@ class RadiusMapView @JvmOverloads constructor(
         strokeWidth = 6f
     }
     private val circleFillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0x332E7D32
+        color = context.getColor(R.color.map_radius_fill)
         style = Paint.Style.FILL
     }
     private val circleStrokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0xFF2E7D32.toInt()
+        color = context.getColor(R.color.success)
         style = Paint.Style.STROKE
         strokeWidth = 3f
     }
     private val pinPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0xFF2E7D32.toInt()
+        color = context.getColor(R.color.success)
         style = Paint.Style.FILL
     }
     private val labelPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0xFF2E7D32.toInt()
+        color = context.getColor(R.color.success)
         textAlign = Paint.Align.CENTER
         isFakeBoldText = true
     }
@@ -47,7 +48,7 @@ class RadiusMapView @JvmOverloads constructor(
         isFakeBoldText = true
     }
     private val locationBgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = 0xFF2E7D32.toInt()
+        color = context.getColor(R.color.success)
         style = Paint.Style.FILL
     }
     private val pinCenterPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {

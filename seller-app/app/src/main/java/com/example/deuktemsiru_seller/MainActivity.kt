@@ -1,29 +1,37 @@
 package com.example.deuktemsiru_seller
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.deuktemsiru_seller.data.SessionManager
 import com.example.deuktemsiru_seller.databinding.ActivityMainBinding
 import com.example.deuktemsiru_seller.network.OrderStatus
+import com.example.deuktemsiru_seller.network.Push
 import com.example.deuktemsiru_seller.network.RetrofitClient
 import com.example.deuktemsiru_seller.ui.auth.LoginActivity
 import com.example.deuktemsiru_seller.ui.home.HomeFragment
 import com.example.deuktemsiru_seller.ui.mypage.MyPageFragment
 import com.example.deuktemsiru_seller.ui.notification.NotificationFragment
 import com.example.deuktemsiru_seller.ui.order.OrderFragment
-import com.example.deuktemsiru_seller.ui.order.PickupVerifyActivity
 import com.example.deuktemsiru_seller.ui.product.ProductFragment
 import com.example.deuktemsiru_seller.ui.sales.SalesFragment
-import com.example.deuktemsiru_seller.ui.store.StoreFragment
 import com.example.deuktemsiru_seller.util.LocalNotificationHelper
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
+
+    private val notificationPermission = registerForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { }
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var session: SessionManager
@@ -54,6 +62,13 @@ class MainActivity : AppCompatActivity() {
 
         // 저장된 토큰 복원
         session.restoreToken()
+        RetrofitClient.onSessionExpired = {
+            runOnUiThread {
+                session.clear()
+                navigateToLogin()
+            }
+        }
+        enablePush()
 
         setupBottomNav()
 
@@ -65,6 +80,15 @@ class MainActivity : AppCompatActivity() {
             }
         }
         refreshOrderBadge()
+    }
+
+    private fun enablePush() {
+        Push.registerCurrentToken()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
     }
 
     override fun onResume() {
@@ -79,6 +103,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onDestroy() {
+        RetrofitClient.onSessionExpired = null
+        super.onDestroy()
+    }
+
     // ── 로그아웃 (MyPageFragment에서 호출) ──────────────────────
     fun logout() {
         lifecycleScope.launch {
@@ -89,9 +118,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // ── 화면 이동 ─────────────────────────────────────────────
-    fun navigateToOrder() {
-        navigateTo(R.id.nav_order)
-    }
+    fun navigateToOrder() = navigateTo(R.id.nav_order)
 
     fun navigateToOrderTab(tabIndex: Int) {
         pendingOrderTab = tabIndex
@@ -103,25 +130,11 @@ class MainActivity : AppCompatActivity() {
         navigateTo(R.id.nav_order)
     }
 
-    fun navigateToSales() {
-        navigateTo(R.id.nav_sales)
-    }
+    fun navigateToSales() = navigateTo(R.id.nav_sales)
 
-    fun navigateToProduct() {
-        navigateTo(R.id.nav_product)
-    }
+    fun navigateToProduct() = navigateTo(R.id.nav_product)
 
-    fun navigateToNotification() {
-        loadFragment(NotificationFragment())
-    }
-
-    fun launchPickupVerify() {
-        startActivity(Intent(this, PickupVerifyActivity::class.java))
-    }
-
-    fun navigateToStore() {
-        loadFragment(StoreFragment())
-    }
+    fun navigateToNotification() = loadFragment(NotificationFragment())
 
     private fun navigateTo(itemId: Int) {
         binding.bottomNav.selectedItemId = itemId

@@ -2,9 +2,11 @@ package com.example.deuktemsiru_seller.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.example.deuktemsiru_seller.network.RetrofitClient
+import com.kakao.sdk.user.UserApiClient
 
 class SessionManager(context: Context) {
     private val prefs = securePrefs(context, "seller_session")
@@ -59,6 +61,10 @@ class SessionManager(context: Context) {
     }
 
     fun clear() {
+        // 카카오 세션까지 끊어야 다음 로그인에서 계정을 다시 고를 수 있습니다.
+        UserApiClient.instance.logout { error ->
+            if (error != null) Log.w("SessionManager", "카카오 로그아웃 실패", error)
+        }
         prefs.edit().clear().apply()
         RetrofitClient.accessToken = null
         RetrofitClient.refreshToken = null
@@ -70,18 +76,18 @@ class SessionManager(context: Context) {
 
 private fun securePrefs(context: Context, name: String): SharedPreferences {
     val appContext = context.applicationContext
-    return runCatching {
-        val masterKey = MasterKey.Builder(appContext)
-            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-            .build()
-        EncryptedSharedPreferences.create(
-            appContext,
-            name,
-            masterKey,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
-        )
-    }.getOrElse {
-        appContext.getSharedPreferences(name, Context.MODE_PRIVATE)
+    val legacy = appContext.getSharedPreferences(name, Context.MODE_PRIVATE)
+    if (legacy.contains("accessToken") || legacy.contains("refreshToken")) {
+        check(appContext.deleteSharedPreferences(name)) { "암호화되지 않은 기존 세션을 삭제하지 못했습니다." }
     }
+    val masterKey = MasterKey.Builder(appContext)
+        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+        .build()
+    return EncryptedSharedPreferences.create(
+        appContext,
+        name,
+        masterKey,
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+    )
 }

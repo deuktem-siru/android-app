@@ -23,14 +23,13 @@ object RetrofitClient {
     @Volatile var refreshToken: String? = null
     @Volatile var memberId: Long = -1L
     var onTokenRefreshed: ((String) -> Unit)? = null
+    var onSessionExpired: (() -> Unit)? = null
 
     /** 목 로그인 세션 여부 — true이면 토큰 갱신 시도를 건너뜁니다. */
     var isMockSession: Boolean = false
 
     init {
-        if (!BuildConfig.DEBUG && BASE_URL.contains("10.0.2.2")) {
-            error("릴리스 빌드에서 에뮬레이터 URL을 사용할 수 없습니다. local.properties에 BACKEND_BASE_URL을 설정하세요.")
-        }
+        requireSecureBaseUrl(BASE_URL, BuildConfig.DEBUG)
     }
 
     private val client: OkHttpClient by lazy {
@@ -97,7 +96,14 @@ object RetrofitClient {
                 }
                 val body = Gson().toJson(mapOf("refreshToken" to refreshToken))
                 conn.outputStream.use { it.write(body.toByteArray()) }
-                if (conn.responseCode != HttpURLConnection.HTTP_OK) return null
+                if (conn.responseCode != HttpURLConnection.HTTP_OK) {
+                    if (isDefinitiveRefreshFailure(conn.responseCode)) {
+                        accessToken = null
+                        RetrofitClient.refreshToken = null
+                        onSessionExpired?.invoke()
+                    }
+                    return null
+                }
                 val json = conn.inputStream.bufferedReader().readText()
                 val type = com.google.gson.reflect.TypeToken.getParameterized(
                     ApiResponse::class.java, TokenData::class.java
@@ -114,14 +120,16 @@ object RetrofitClient {
             }
         }
 
-        private fun responseCount(response: Response): Int {
-            var count = 1
-            var prior = response.priorResponse
-            while (prior != null) {
-                count++
-                prior = prior.priorResponse
-            }
-            return count
-        }
+        private fun responseCount(response: Response) =
+            generateSequence(response) { it.priorResponse }.count()
     }
 }
+
+internal fun requireSecureBaseUrl(baseUrl: String, isDebug: Boolean) {
+    require(isDebug || URI(baseUrl).scheme.equals("https", ignoreCase = true)) {
+        "릴리스 빌드는 HTTPS 백엔드만 사용할 수 있습니다. local.properties의 BACKEND_BASE_URL을 확인하세요."
+    }
+}
+
+internal fun isDefinitiveRefreshFailure(statusCode: Int): Boolean =
+    statusCode == HttpURLConnection.HTTP_BAD_REQUEST || statusCode == HttpURLConnection.HTTP_UNAUTHORIZED
