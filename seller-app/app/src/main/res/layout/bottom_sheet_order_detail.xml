@@ -14,7 +14,7 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="12dp"
         android:layout_marginBottom="16dp"
-        android:background="#CCCCCC" />
+        android:background="@color/border" />
 
     <!-- Header -->
     <LinearLayout
@@ -117,14 +117,14 @@
                 android:layout_width="80dp"
                 android:layout_height="wrap_content"
                 android:text="고객명"
-                android:textSize="16sp"
+                android:textSize="17sp"
                 android:textColor="@color/text_sub" />
 
             <TextView
                 android:id="@+id/tv_customer_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
+                android:textSize="17sp"
                 android:textColor="@color/text"
                 android:fontFamily="sans-serif-medium" />
 
@@ -140,14 +140,14 @@
                 android:layout_width="80dp"
                 android:layout_height="wrap_content"
                 android:text="픽업 시각"
-                android:textSize="16sp"
+                android:textSize="17sp"
                 android:textColor="@color/text_sub" />
 
             <TextView
                 android:id="@+id/tv_pickup_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
+                android:textSize="17sp"
                 android:textColor="@color/text"
                 android:fontFamily="sans-serif-medium" />
 
@@ -163,14 +163,14 @@
                 android:layout_width="80dp"
                 android:layout_height="wrap_content"
                 android:text="픽업 코드"
-                android:textSize="16sp"
+                android:textSize="17sp"
                 android:textColor="@color/text_sub" />
 
             <TextView
                 android:id="@+id/tv_pickup_code"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
+                android:textSize="17sp"
                 android:textColor="@color/text"
                 android:fontFamily="sans-serif-medium" />
 
@@ -185,7 +185,7 @@
                 android:layout_width="80dp"
                 android:layout_height="wrap_content"
                 android:text="결제 금액"
-                android:textSize="16sp"
+                android:textSize="17sp"
                 android:textColor="@color/text_sub" />
 
             <TextView

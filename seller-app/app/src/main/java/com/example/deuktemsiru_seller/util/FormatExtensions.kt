@@ -1,5 +1,6 @@
 package com.example.deuktemsiru_seller.util
 
+import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.view.LayoutInflater
@@ -11,8 +12,10 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.core.content.ContextCompat
+import androidx.core.widget.doOnTextChanged
 import com.example.deuktemsiru_seller.R
 import com.example.deuktemsiru_seller.data.SessionManager
+import com.example.deuktemsiru_seller.network.SalesPeriod
 import com.example.deuktemsiru_seller.ui.auth.LoginActivity
 import retrofit2.HttpException
 import java.time.LocalDate
@@ -29,6 +32,12 @@ fun String.toClockMinutes(defaultHour: Int = 21, defaultMinute: Int = 0): Int {
     return hour * 60 + minute
 }
 
+fun Context.showTimePicker(initialMinutes: Int, onPicked: (Int) -> Unit) {
+    TimePickerDialog(this, { _, hour, minute ->
+        onPicked(hour * 60 + minute)
+    }, initialMinutes / 60, initialMinutes % 60, true).show()
+}
+
 fun Context.toast(message: String, duration: Int = Toast.LENGTH_SHORT) {
     Toast.makeText(this, message, duration).show()
 }
@@ -41,11 +50,9 @@ fun TextView.setSelectedChip(
     selected: Boolean,
     selectedBackground: Int = R.drawable.bg_discount_preset_selected,
     unselectedBackground: Int = R.drawable.bg_discount_preset_normal,
-    selectedTextColor: Int = R.color.white,
-    unselectedTextColor: Int = R.color.text_sub,
 ) {
     setBackgroundResource(if (selected) selectedBackground else unselectedBackground)
-    setTextColor(ContextCompat.getColor(context, if (selected) selectedTextColor else unselectedTextColor))
+    setTextColor(ContextCompat.getColor(context, if (selected) R.color.white else R.color.text_sub))
 }
 
 fun View.visibleIf(visible: Boolean) {
@@ -54,6 +61,15 @@ fun View.visibleIf(visible: Boolean) {
 
 fun Collection<View>.visibleIf(visible: Boolean) {
     forEach { it.visibleIf(visible) }
+}
+
+/** "${actionLabel}에 실패했어요." + 서버 응답의 message 필드 또는 HTTP 코드 */
+fun Throwable.failureMessage(actionLabel: String): String {
+    if (this !is HttpException) return "${actionLabel}에 실패했어요."
+    val detail = response()?.errorBody()?.string()
+        ?.let { Regex(""""message"\s*:\s*"([^"]+)"""").find(it)?.groupValues?.getOrNull(1) }
+    return if (detail.isNullOrBlank()) "${actionLabel}에 실패했어요. (${code()})"
+    else "${actionLabel}에 실패했어요. $detail"
 }
 
 fun Fragment.handleSellerAuthFailure(
@@ -72,17 +88,13 @@ fun Fragment.handleSellerAuthFailure(
     return true
 }
 
-fun ViewGroup.replaceChildren(children: Iterable<View>) {
-    removeAllViews()
-    children.forEach(::addView)
-}
-
 fun <T> ViewGroup.renderChildren(
     items: List<T>,
     emptyView: () -> View,
     itemView: (T) -> View,
 ) {
-    replaceChildren(if (items.isEmpty()) listOf(emptyView()) else items.map(itemView))
+    removeAllViews()
+    (if (items.isEmpty()) listOf(emptyView()) else items.map(itemView)).forEach(::addView)
 }
 
 fun LayoutInflater.inflateInto(layoutRes: Int, parent: ViewGroup): View =
@@ -110,10 +122,10 @@ fun EditText.bindDiscountPresets(
             setSelection(text?.length ?: 0)
         }
     }
-    addTextChangedListener(simpleTextWatcher { text ->
-        onRateChanged(text.toIntOrNull() ?: 0)
+    doOnTextChanged { text, _, _, _ ->
+        onRateChanged(text.toString().toIntOrNull() ?: 0)
         refresh()
-    })
+    }
     refreshDiscountPresets(presets, selectedRate())
 }
 
@@ -149,10 +161,10 @@ fun setupQuantityControls(
     refresh()
 }
 
-fun LocalDate.offsetBy(period: com.example.deuktemsiru_seller.network.SalesPeriod, offset: Int): LocalDate =
+fun LocalDate.offsetBy(period: SalesPeriod, offset: Int): LocalDate =
     when (period) {
-        com.example.deuktemsiru_seller.network.SalesPeriod.Day -> minusDays(offset.toLong())
-        com.example.deuktemsiru_seller.network.SalesPeriod.Month -> minusMonths(offset.toLong())
+        SalesPeriod.Day -> minusDays(offset.toLong())
+        SalesPeriod.Month -> minusMonths(offset.toLong())
         else -> minusWeeks(offset.toLong())
     }
 

@@ -111,7 +111,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginTop="12dp"
-            android:elevation="6dp"
+            android:elevation="0dp"
             android:clickable="true"
             android:focusable="true">
 
@@ -325,10 +325,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:text="단골 알림"
-                android:textSize="15sp"
-                android:textColor="@color/primary"
+                android:textSize="17sp"
+                android:textColor="@color/primary_dark"
                 android:fontFamily="sans-serif-medium"
-                app:backgroundTint="#E3F1EC"
+                app:backgroundTint="@color/secondary_button_bg"
                 app:cornerRadius="14dp"
                 android:layout_marginTop="12dp"
                 android:insetTop="0dp"
@@ -375,7 +375,7 @@
                     android:id="@+id/tv_notice_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="16sp"
+                    android:textSize="17sp"
                     android:textColor="@color/text"
                     android:fontFamily="sans-serif-medium" />
 

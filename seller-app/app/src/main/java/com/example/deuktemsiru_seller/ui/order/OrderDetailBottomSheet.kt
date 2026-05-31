@@ -73,20 +73,19 @@ class OrderDetailBottomSheet : BottomSheetDialogFragment() {
         val badge = order.orderStatus.badgeStyle(order.status)
         binding.tvStatusBadge.text = badge.text
         binding.tvStatusBadge.setBackgroundResource(badge.backgroundRes)
-        binding.tvStatusBadge.setTextColor(badge.textColor)
+        binding.tvStatusBadge.setTextColor(requireContext().getColor(badge.textColorRes))
 
         binding.itemsContainer.renderChildren(
             items = order.items,
             emptyView = { TextView(requireContext()) },
         ) { item ->
-            val row = TextView(requireContext()).apply {
+            TextView(requireContext()).apply {
                 val emojiPart = item.emoji?.let { "$it " } ?: ""
                 text = "$emojiPart${item.name}  ×${item.quantity}  ${(item.price * item.quantity).toWon()}"
                 textSize = 14f
                 setTextColor(requireContext().getColor(R.color.text))
                 setPadding(0, 4, 0, 4)
             }
-            row
         }
 
         val (actionText, nextStatus) = when (order.orderStatus) {

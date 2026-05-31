@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:background="@drawable/bg_card_white"
-    android:elevation="2dp"
+    android:elevation="0dp"
             android:padding="16dp"
             android:layout_marginBottom="16dp">
 
@@ -124,7 +124,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:background="@drawable/bg_card_white"
-    android:elevation="2dp"
+    android:elevation="0dp"
             android:padding="16dp"
             android:layout_marginBottom="12dp">
 
@@ -138,28 +138,28 @@
                 android:layout_marginBottom="12dp" />
 
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="8dp">
-                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="메뉴명" android:textSize="16sp" android:textColor="@color/text_sub" />
-                <TextView android:id="@+id/tv_summary_menu_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="크루아상 모음 박스" android:textSize="16sp" android:textColor="@color/text" android:fontFamily="sans-serif-medium" />
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="메뉴명" android:textSize="17sp" android:textColor="@color/text_sub" />
+                <TextView android:id="@+id/tv_summary_menu_name" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="크루아상 모음 박스" android:textSize="17sp" android:textColor="@color/text" android:fontFamily="sans-serif-medium" />
             </LinearLayout>
 
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="8dp">
-                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="정상가" android:textSize="16sp" android:textColor="@color/text_sub" />
-                <TextView android:id="@+id/tv_summary_original_price" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="15,000원" android:textSize="16sp" android:textColor="@color/text" android:fontFamily="sans-serif-medium" />
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="정상가" android:textSize="17sp" android:textColor="@color/text_sub" />
+                <TextView android:id="@+id/tv_summary_original_price" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="15,000원" android:textSize="17sp" android:textColor="@color/text" android:fontFamily="sans-serif-medium" />
             </LinearLayout>
 
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="8dp">
-                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="마감 할인가" android:textSize="16sp" android:textColor="@color/text_sub" />
-                <TextView android:id="@+id/tv_summary_discount_price" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="5,900원 (60% 할인)" android:textSize="16sp" android:textColor="@color/primary" android:fontFamily="sans-serif-medium" />
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="마감 할인가" android:textSize="17sp" android:textColor="@color/text_sub" />
+                <TextView android:id="@+id/tv_summary_discount_price" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="5,900원 (60% 할인)" android:textSize="17sp" android:textColor="@color/primary" android:fontFamily="sans-serif-medium" />
             </LinearLayout>
 
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="8dp">
-                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="판매 수량" android:textSize="16sp" android:textColor="@color/text_sub" />
-                <TextView android:id="@+id/tv_summary_quantity" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="5개" android:textSize="16sp" android:textColor="@color/text" android:fontFamily="sans-serif-medium" />
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="판매 수량" android:textSize="17sp" android:textColor="@color/text_sub" />
+                <TextView android:id="@+id/tv_summary_quantity" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="5개" android:textSize="17sp" android:textColor="@color/text" android:fontFamily="sans-serif-medium" />
             </LinearLayout>
 
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
-                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="픽업 시간" android:textSize="16sp" android:textColor="@color/text_sub" />
-                <TextView android:id="@+id/tv_summary_pickup_time" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="16:30 – 18:00" android:textSize="16sp" android:textColor="@color/text" android:fontFamily="sans-serif-medium" />
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="픽업 시간" android:textSize="17sp" android:textColor="@color/text_sub" />
+                <TextView android:id="@+id/tv_summary_pickup_time" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="16:30 – 18:00" android:textSize="17sp" android:textColor="@color/text" android:fontFamily="sans-serif-medium" />
             </LinearLayout>
 
         </LinearLayout>

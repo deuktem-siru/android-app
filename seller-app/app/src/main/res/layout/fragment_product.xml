@@ -37,7 +37,7 @@
             android:stateListAnimator="@null"
             android:text="마감 상품 등록"
             android:textColor="@color/white"
-            android:textSize="16sp" />
+            android:textSize="17sp" />
 
     </LinearLayout>
 

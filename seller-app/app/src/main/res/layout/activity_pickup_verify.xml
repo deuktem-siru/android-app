@@ -76,7 +76,7 @@
                     android:layout_height="56dp"
                     android:layout_weight="1"
                     android:background="@drawable/bg_card_white"
-    android:elevation="2dp"
+    android:elevation="0dp"
                     android:hint="픽업 코드 (영문/숫자 6자리)"
                     android:digits="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
                     android:inputType="textCapCharacters|textVisiblePassword"
@@ -100,7 +100,7 @@
                     android:insetBottom="0dp"
                     android:stateListAnimator="@null"
                     android:text="확인"
-                    android:textColor="#FFFFFF"
+                    android:textColor="@color/white"
                     android:textSize="17sp" />
 
             </LinearLayout>
@@ -138,7 +138,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:background="@drawable/bg_card_white"
-    android:elevation="2dp"
+    android:elevation="0dp"
                 android:padding="16dp"
                 android:layout_marginTop="16dp"
                 android:visibility="gone">
@@ -157,7 +157,7 @@
                     android:id="@+id/tv_result_customer_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="16sp"
+                    android:textSize="17sp"
                     android:textColor="@color/text_sub"
                     android:layout_marginBottom="6dp" />
 
@@ -165,7 +165,7 @@
                     android:id="@+id/tv_result_order_number"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="16sp"
+                    android:textSize="17sp"
                     android:textColor="@color/text_sub" />
 
                 <TextView
@@ -173,7 +173,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:textSize="16sp"
+                    android:textSize="17sp"
                     android:textColor="@color/text_sub" />
 
                 <TextView
@@ -196,7 +196,7 @@
                     android:insetBottom="0dp"
                     android:stateListAnimator="@null"
                     android:text="픽업 완료 처리"
-                    android:textColor="#FFFFFF"
+                    android:textColor="@color/white"
                     android:textSize="17sp"
                     android:fontFamily="sans-serif-medium" />
 
@@ -209,7 +209,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:background="@drawable/bg_card_white"
-    android:elevation="2dp"
+    android:elevation="0dp"
                 android:padding="16dp"
                 android:layout_marginTop="16dp"
                 android:visibility="gone">
@@ -219,7 +219,7 @@
                     android:layout_height="wrap_content"
                     android:text="🎉 픽업 완료!"
                     android:textSize="18sp"
-                    android:textColor="#2E7D32"
+                    android:textColor="@color/success"
                     android:fontFamily="sans-serif-medium"
                     android:layout_marginBottom="12dp" />
 
@@ -258,7 +258,7 @@
                             android:layout_height="wrap_content"
                             android:text="픽업 완료"
                             android:textSize="14sp"
-                            android:textColor="#2E7D32"
+                            android:textColor="@color/success"
                             android:layout_marginTop="2dp" />
 
                     </LinearLayout>

@@ -14,7 +14,7 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="12dp"
         android:layout_marginBottom="16dp"
-        android:background="#E0E0E0"
+        android:background="@color/border"
         android:layout_marginStart="0dp" />
 
     <!-- Header with emoji + name + status badge -->
@@ -87,7 +87,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="할인가"
-            android:textSize="16sp"
+            android:textSize="17sp"
             android:textColor="@color/text_sub" />
 
         <TextView
@@ -103,7 +103,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:textSize="16sp"
+            android:textSize="17sp"
             android:textColor="@color/text_muted" />
 
     </LinearLayout>
@@ -124,7 +124,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="잔여 수량"
-            android:textSize="16sp"
+            android:textSize="17sp"
             android:textColor="@color/text_sub" />
 
         <TextView
@@ -153,7 +153,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="픽업 시간"
-            android:textSize="16sp"
+            android:textSize="17sp"
             android:textColor="@color/text_sub" />
 
         <TextView

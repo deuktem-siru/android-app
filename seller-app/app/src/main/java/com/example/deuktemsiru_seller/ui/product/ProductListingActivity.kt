@@ -2,14 +2,14 @@ package com.example.deuktemsiru_seller.ui.product
 
 import android.content.Intent
 import android.os.Bundle
-import android.app.TimePickerDialog
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
+import com.example.deuktemsiru_seller.MainActivity
 import com.example.deuktemsiru_seller.R
 import com.example.deuktemsiru_seller.data.SessionManager
 import com.example.deuktemsiru_seller.databinding.ActivityProductListingBinding
@@ -17,11 +17,13 @@ import com.example.deuktemsiru_seller.databinding.ItemChooseMenuBinding
 import com.example.deuktemsiru_seller.network.MenuItemApiResponse
 import com.example.deuktemsiru_seller.network.RetrofitClient
 import com.example.deuktemsiru_seller.network.SaleItemCreateRequest
-import com.example.deuktemsiru_seller.network.deleteMenuCompat
 import com.example.deuktemsiru_seller.ui.registration.MenuRegistrationActivity
+import com.example.deuktemsiru_seller.util.applySystemBarInsets
 import com.example.deuktemsiru_seller.util.PickupTimeState
+import com.example.deuktemsiru_seller.util.showTimePicker
 import com.example.deuktemsiru_seller.util.bindDiscountPresets
 import com.example.deuktemsiru_seller.util.discountPresetViews
+import com.example.deuktemsiru_seller.util.failureMessage
 import com.example.deuktemsiru_seller.util.emptyTextView
 import com.example.deuktemsiru_seller.util.inflateInto
 import com.example.deuktemsiru_seller.util.loadMenuImage
@@ -52,11 +54,7 @@ class ProductListingActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityProductListingBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
-            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
-            insets
-        }
+        binding.root.applySystemBarInsets()
         session = SessionManager(this)
         binding.btnBack.setOnClickListener { onBackPressedDispatcher.onBackPressed() }
         binding.btnNext.setOnClickListener { onNextClicked() }
@@ -158,15 +156,11 @@ class ProductListingActivity : AppCompatActivity() {
         val btnModePrice = view.findViewById<TextView>(R.id.btn_mode_price)
 
         fun updateModeUI() {
-            if (selectedPriceMode == "rate") {
-                layoutRateMode.visibleIf(true)
-                layoutPriceMode.visibleIf(false)
-            } else {
-                layoutRateMode.visibleIf(false)
-                layoutPriceMode.visibleIf(true)
-            }
-            btnModeRate.setSelectedChip(selectedPriceMode == "rate")
-            btnModePrice.setSelectedChip(selectedPriceMode == "price")
+            val rateMode = selectedPriceMode == "rate"
+            layoutRateMode.visibleIf(rateMode)
+            layoutPriceMode.visibleIf(!rateMode)
+            btnModeRate.setSelectedChip(rateMode)
+            btnModePrice.setSelectedChip(!rateMode)
         }
 
         updateModeUI()
@@ -213,13 +207,6 @@ class ProductListingActivity : AppCompatActivity() {
             tvEnd.text = pickupTime.endLabel
         }
 
-        fun showTimePicker(initialMinutes: Int, onPicked: (Int) -> Unit) {
-            TimePickerDialog(this, { _, hour, minute ->
-                onPicked(hour * 60 + minute)
-                refreshPickupViews()
-            }, initialMinutes / 60, initialMinutes % 60, true).show()
-        }
-
         fun setDuration(minutes: Int) {
             pickupTime.setDuration(minutes)
             highlightContainer(containerEnd, containerStart)
@@ -229,18 +216,17 @@ class ProductListingActivity : AppCompatActivity() {
         containerStart.setOnClickListener {
             highlightContainer(containerStart, containerEnd)
             showTimePicker(pickupTime.startMinutes) { picked ->
-                pickupTime.startMinutes = picked
-                pickupTime.ensureEndAfterStart(minDurationMinutes = 60)
+                pickupTime.updateStart(picked, minDurationMinutes = 60)
+                refreshPickupViews()
             }
         }
         containerEnd.setOnClickListener {
             highlightContainer(containerEnd, containerStart)
             showTimePicker(pickupTime.endMinutes) { picked ->
-                if (picked <= pickupTime.startMinutes) {
+                if (!pickupTime.updateEnd(picked)) {
                     toast("마감 시간은 시작 시간보다 늦어야 해요.")
-                } else {
-                    pickupTime.endMinutes = picked
                 }
+                refreshPickupViews()
             }
         }
         chip30Min.setOnClickListener { setDuration(30) }
@@ -292,11 +278,12 @@ class ProductListingActivity : AppCompatActivity() {
                     throw IllegalStateException(response.message)
                 }
                 toast("상품이 등록됐어요!")
-                val intent = android.content.Intent(this@ProductListingActivity, com.example.deuktemsiru_seller.MainActivity::class.java).apply {
-                    flags = android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP or android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP
-                    putExtra("navigate_to_product", true)
-                }
-                startActivity(intent)
+                startActivity(
+                    Intent(this@ProductListingActivity, MainActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                        putExtra("navigate_to_product", true)
+                    }
+                )
                 finish()
             } catch (e: Exception) {
                 toast("등록에 실패했어요")
@@ -333,20 +320,20 @@ class ProductListingActivity : AppCompatActivity() {
     }
 
     private fun confirmDeleteMenu(menu: MenuItemApiResponse) {
-        androidx.appcompat.app.AlertDialog.Builder(this)
+        AlertDialog.Builder(this)
             .setTitle("메뉴 삭제")
             .setMessage("${menu.name}을(를) 삭제할까요?")
             .setPositiveButton("삭제") { _, _ ->
                 lifecycleScope.launch {
                     runCatching {
-                        RetrofitClient.api.deleteMenuCompat(RetrofitClient.memberId, menu.id)
+                        RetrofitClient.api.deleteMenu(menu.id, RetrofitClient.memberId)
                     }.onSuccess {
                         if (selectedMenu?.id == menu.id) selectedMenu = null
                         toast("메뉴가 삭제됐어요")
                         loadMenus()
                     }.onFailure { error ->
-                        android.util.Log.e("ProductListingActivity", "Failed to delete menu id=${menu.id}", error)
-                        toast(deleteMenuErrorMessage(error))
+                        Log.e("ProductListingActivity", "Failed to delete menu id=${menu.id}", error)
+                        toast(error.failureMessage("메뉴 삭제"))
                     }
                 }
             }
@@ -354,11 +341,4 @@ class ProductListingActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun deleteMenuErrorMessage(error: Throwable): String {
-        if (error !is retrofit2.HttpException) return "메뉴 삭제에 실패했어요."
-        val detail = error.response()?.errorBody()?.string()
-            ?.let { Regex(""""message"\s*:\s*"([^"]+)"""").find(it)?.groupValues?.getOrNull(1) }
-        return if (detail.isNullOrBlank()) "메뉴 삭제에 실패했어요. (${error.code()})"
-        else "메뉴 삭제에 실패했어요. $detail"
-    }
 }

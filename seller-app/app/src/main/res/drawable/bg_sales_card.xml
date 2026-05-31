@@ -1,27 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Depth shadow -->
-    <item android:left="3dp" android:top="5dp">
-        <shape android:shape="rectangle">
-            <solid android:color="#55001A28" />
-            <corners android:radius="20dp" />
-        </shape>
-    </item>
-    <!-- Solid primary surface -->
-    <item android:right="2dp" android:bottom="2dp">
-        <shape android:shape="rectangle">
-            <solid android:color="@color/primary" />
-            <corners android:radius="20dp" />
-        </shape>
-    </item>
-    <!-- Subtle top-left highlight for depth -->
-    <item android:right="2dp" android:bottom="2dp">
-        <shape android:shape="rectangle">
-            <gradient
-                android:startColor="#1AFFFFFF"
-                android:endColor="#00FFFFFF"
-                android:angle="135" />
-            <corners android:radius="20dp" />
-        </shape>
-    </item>
-</layer-list>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/primary" />
+    <corners android:radius="18dp" />
+</shape>

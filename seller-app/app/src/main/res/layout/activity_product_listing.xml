@@ -43,7 +43,7 @@
             android:layout_height="wrap_content"
             android:gravity="end"
             android:text="단계"
-            android:textSize="16sp"
+            android:textSize="17sp"
             android:textColor="@color/text_sub" />
 
     </LinearLayout>

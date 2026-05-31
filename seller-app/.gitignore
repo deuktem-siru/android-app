@@ -1,48 +1,59 @@
-# Built outputs
-/build/
-app/build/
+# OS
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
 
-# Gradle
+# Editors
+.idea/*
+!.idea/runConfigurations/
+!.idea/runConfigurations.xml
+!.idea/codeStyles/
+!.idea/inspectionProfiles/
+.vscode/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+
+# Logs
+*.log
+logs/
+
+# Gradle / Kotlin
 .gradle/
+.kotlin/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+*.class
+*.jar
 !gradle/wrapper/gradle-wrapper.jar
-
-# Android local config
-local.properties
-keystore.properties
-
-# IntelliJ / Android Studio
-.idea/caches/
-.idea/libraries/
-.idea/modules.xml
-.idea/workspace.xml
-.idea/navEditor.xml
-.idea/assetWizardSettings.xml
-.idea/markdown.xml
-.idea/deploymentTargetSelector.xml
-.idea/deviceManager.xml
-.idea/misc.xml
 *.iml
 *.ipr
 *.iws
+local.properties
 
-# OS
-.DS_Store
-Thumbs.db
+# Android
+/captures/
+*.apk
+*.aab
 
-# Keystore
+# Signing and services
 *.jks
 *.keystore
 *.pem
-
-# 인증서 추출 임시 파일
 *.der
+keystore.properties
+google-services.json
 
-# Captures / profiling
-/captures/
-
-# NDK
-.externalNativeBuild/
-.cxx/
-
-# AI Tools
+# Local tools
 .claude/

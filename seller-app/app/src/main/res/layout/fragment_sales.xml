@@ -48,7 +48,7 @@
                 android:paddingVertical="12dp"
                 android:text="오늘 매출 흐름과 인기 메뉴를 먼저 확인하세요"
                 android:textColor="@color/primary_dark"
-                android:textSize="16sp"
+                android:textSize="17sp"
                 android:fontFamily="sans-serif-medium"
                 android:layout_marginBottom="12dp" />
 
@@ -66,7 +66,7 @@
                     android:layout_height="36dp"
                     android:gravity="center"
                     android:text="◀"
-                    android:textSize="16sp"
+                    android:textSize="17sp"
                     android:textColor="@color/text_sub" />
 
                 <LinearLayout
@@ -85,7 +85,7 @@
                         android:layout_weight="1"
                         android:gravity="center"
                         android:text="일간"
-                        android:textSize="16sp"
+                        android:textSize="17sp"
                         android:textColor="@color/white"
                         android:fontFamily="sans-serif-medium"
                         android:background="@drawable/bg_button_primary" />
@@ -97,7 +97,7 @@
                         android:layout_weight="1"
                         android:gravity="center"
                         android:text="주간"
-                        android:textSize="16sp"
+                        android:textSize="17sp"
                         android:textColor="@color/text_muted" />
 
                     <TextView
@@ -107,7 +107,7 @@
                         android:layout_weight="1"
                         android:gravity="center"
                         android:text="월간"
-                        android:textSize="16sp"
+                        android:textSize="17sp"
                         android:textColor="@color/text_muted" />
 
                 </LinearLayout>
@@ -118,7 +118,7 @@
                     android:layout_height="36dp"
                     android:gravity="center"
                     android:text="▶"
-                    android:textSize="16sp"
+                    android:textSize="17sp"
                     android:textColor="@color/text_sub" />
 
             </LinearLayout>
@@ -215,7 +215,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="환경 기여"
-                        android:textSize="16sp"
+                        android:textSize="17sp"
                         android:textColor="#CCFFFFFF"
                         android:fontFamily="sans-serif-medium" />
 
@@ -234,7 +234,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="탄소 --kg 절감"
-                        android:textSize="16sp"
+                        android:textSize="17sp"
                         android:textColor="#CCFFFFFF"
                         android:layout_marginTop="2dp" />
 
@@ -305,7 +305,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="💡 데이터를 불러오는 중이에요..."
-                    android:textSize="16sp"
+                    android:textSize="17sp"
                     android:textColor="@color/primary_dark" />
 
             </LinearLayout>

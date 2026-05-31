@@ -25,6 +25,7 @@ import com.example.deuktemsiru_seller.network.UpdateOrderStatusRequest
 import com.example.deuktemsiru_seller.util.LocalNotificationHelper
 import com.example.deuktemsiru_seller.ui.settings.NotificationSettingsActivity
 import com.example.deuktemsiru_seller.util.emptyTextView
+import com.example.deuktemsiru_seller.util.failureMessage
 import com.example.deuktemsiru_seller.util.handleSellerAuthFailure
 import com.example.deuktemsiru_seller.util.renderChildren
 import com.example.deuktemsiru_seller.util.toast
@@ -32,6 +33,9 @@ import com.example.deuktemsiru_seller.util.toWon
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
 
 class OrderFragment : Fragment() {
 
@@ -61,7 +65,7 @@ class OrderFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         session = SessionManager(requireContext())
         setupTabs()
-        val mainActivity = activity as? com.example.deuktemsiru_seller.MainActivity
+        val mainActivity = activity as? MainActivity
         val pendingTab = mainActivity?.pendingOrderTab
         when {
             pendingTab != null -> {
@@ -157,20 +161,27 @@ class OrderFragment : Fragment() {
 
     private fun showTab(index: Int) {
         when (index) {
-            0 -> showNewOrders(ordersByStatus(OrderStatus.Pending))
-            1 -> showConfirmedOrders(ordersByStatus(OrderStatus.Confirmed))
-            3 -> showCompletedOrders(ordersByStatus(OrderStatus.PickedUp, OrderStatus.Cancelled))
+            0 -> showNewOrders(ordersForTab(0))
+            1 -> showConfirmedOrders(ordersForTab(1))
+            3 -> showCompletedOrders(ordersForTab(3))
             // index 2 = tabPickup은 UI에서 숨김 처리되어 있으므로 아무것도 하지 않음
         }
     }
 
-    private fun ordersByStatus(vararg statuses: OrderStatus): List<OrderApiResponse> =
-        allOrders.filter { order -> order.orderStatus in statuses }
+    private fun statusesForTab(tabIndex: Int): List<OrderStatus> = when (tabIndex) {
+        0 -> listOf(OrderStatus.Pending)
+        1 -> listOf(OrderStatus.Confirmed)
+        3 -> listOf(OrderStatus.PickedUp, OrderStatus.Cancelled)
+        else -> emptyList()
+    }
+
+    private fun ordersForTab(tabIndex: Int, orders: List<OrderApiResponse> = allOrders): List<OrderApiResponse> =
+        orders.filter { it.orderStatus in statusesForTab(tabIndex) }
 
     private fun updateTabCounts() {
-        binding.tabNew.text = getString(R.string.tab_new_order_count, ordersByStatus(OrderStatus.Pending).size)
-        binding.tabPreparing.text = getString(R.string.tab_preparing_count, ordersByStatus(OrderStatus.Confirmed).size)
-        binding.tabDone.text = getString(R.string.tab_completed_count, ordersByStatus(OrderStatus.PickedUp, OrderStatus.Cancelled).size)
+        binding.tabNew.text = getString(R.string.tab_new_order_count, ordersForTab(0).size)
+        binding.tabPreparing.text = getString(R.string.tab_preparing_count, ordersForTab(1).size)
+        binding.tabDone.text = getString(R.string.tab_completed_count, ordersForTab(3).size)
     }
 
     private fun showNewOrders(orders: List<OrderApiResponse>) {
@@ -269,7 +280,7 @@ class OrderFragment : Fragment() {
                 if (handleSellerAuthFailure(e, session, "다시 로그인해주세요.")) return@launch
                 onFailure()
                 Log.e(TAG, "Failed to update order status. orderId=$orderId status=${status.apiValue}", e)
-                toast(statusUpdateErrorMessage(e))
+                toast(e.failureMessage("상태 업데이트"))
                 // Intentionally reload the full order list on failure to restore consistent UI state.
                 loadOrders()
             } finally {
@@ -299,12 +310,7 @@ class OrderFragment : Fragment() {
         orderIdsForTab(currentTab, allOrders) != orderIdsForTab(currentTab, newOrders)
 
     private fun orderIdsForTab(tabIndex: Int, orders: List<OrderApiResponse>): List<Long> =
-        when (tabIndex) {
-            0 -> orders.filter { it.orderStatus == OrderStatus.Pending }
-            1 -> orders.filter { it.orderStatus == OrderStatus.Confirmed }
-            3 -> orders.filter { it.orderStatus in setOf(OrderStatus.PickedUp, OrderStatus.Cancelled) }
-            else -> emptyList()
-        }.map { it.id }
+        ordersForTab(tabIndex, orders).map { it.id }
 
     private fun List<OrderApiResponse>.pendingOrderIds(): Set<Long> =
         filter { it.orderStatus == OrderStatus.Pending }.map { it.id }.toSet()
@@ -317,26 +323,17 @@ class OrderFragment : Fragment() {
             "$emojiPart${item.name} × ${item.quantity}"
         }
 
-    private fun elapsedLabel(createdAt: String): String {
-        return try {
-            val created = runCatching { java.time.OffsetDateTime.parse(createdAt) }
-                .getOrElse { java.time.LocalDateTime.parse(createdAt).atOffset(java.time.OffsetDateTime.now().offset) }
-            val minutes = java.time.Duration.between(created, java.time.OffsetDateTime.now()).toMinutes()
-            when {
-                minutes < 1 -> "방금 전"
-                minutes < 60 -> "${minutes}분 경과"
-                else -> "${minutes / 60}시간 ${minutes % 60}분 경과"
-            }
-        } catch (_: Exception) { "" }
-    }
+    private fun elapsedLabel(createdAt: String): String = try {
+        val created = runCatching { OffsetDateTime.parse(createdAt) }
+            .getOrElse { LocalDateTime.parse(createdAt).atOffset(OffsetDateTime.now().offset) }
+        val minutes = Duration.between(created, OffsetDateTime.now()).toMinutes()
+        when {
+            minutes < 1 -> "방금 전"
+            minutes < 60 -> "${minutes}분 경과"
+            else -> "${minutes / 60}시간 ${minutes % 60}분 경과"
+        }
+    } catch (_: Exception) { "" }
 
-    private fun statusUpdateErrorMessage(error: Exception): String {
-        if (error !is HttpException) return "상태 업데이트에 실패했어요."
-        val detail = error.response()?.errorBody()?.string()
-            ?.let { Regex(""""message"\s*:\s*"([^"]+)"""").find(it)?.groupValues?.getOrNull(1) ?: "오류가 발생했습니다" }
-        return if (detail.isNullOrBlank()) "상태 업데이트에 실패했어요. (${error.code()})"
-        else "상태 업데이트에 실패했어요. $detail"
-    }
 
     private fun createEmptyView(message: String): View {
         return requireContext().emptyTextView(message, topMarginDp = 48, verticalPaddingDp = 0, centered = true)

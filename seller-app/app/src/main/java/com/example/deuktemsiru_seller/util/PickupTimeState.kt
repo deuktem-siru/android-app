@@ -4,6 +4,17 @@ data class PickupTimeState(
     var startMinutes: Int = 16 * 60 + 30,
     var endMinutes: Int = 18 * 60,
 ) {
+    fun updateStart(minutes: Int, minDurationMinutes: Int) {
+        startMinutes = minutes
+        ensureEndAfterStart(minDurationMinutes)
+    }
+
+    fun updateEnd(minutes: Int): Boolean {
+        if (minutes <= startMinutes) return false
+        endMinutes = minutes
+        return true
+    }
+
     fun ensureEndAfterStart(minDurationMinutes: Int) {
         if (endMinutes <= startMinutes) {
             endMinutes = (startMinutes + minDurationMinutes).coerceAtMost(LAST_MINUTE_OF_DAY)

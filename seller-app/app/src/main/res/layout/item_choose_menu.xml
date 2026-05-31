@@ -6,7 +6,7 @@
     android:orientation="horizontal"
     android:gravity="center_vertical"
     android:background="@drawable/bg_menu_card_normal"
-    android:elevation="2dp"
+    android:elevation="0dp"
     android:padding="14dp"
     android:layout_marginBottom="8dp"
     android:clickable="true"

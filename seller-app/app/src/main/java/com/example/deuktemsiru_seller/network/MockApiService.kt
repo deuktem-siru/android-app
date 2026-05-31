@@ -1,11 +1,7 @@
 package com.example.deuktemsiru_seller.network
 
 import okhttp3.MultipartBody
-import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody
-import okhttp3.ResponseBody
-import okhttp3.ResponseBody.Companion.toResponseBody
-import retrofit2.Response
 
 object MockApiService : ApiService {
 
@@ -104,8 +100,8 @@ object MockApiService : ApiService {
     // ── 인증 ─────────────────────────────────────────────────────
     override suspend fun kakaoLogin(req: KakaoLoginRequest) = ApiResponse<LoginData>(400, "mock", null)
     override suspend fun debugLogin(req: DebugLoginRequest) = ApiResponse<LoginData>(400, "mock", null)
-    override suspend fun refresh(req: TokenRefreshRequest) = ApiResponse<TokenData>(400, "mock", null)
     override suspend fun logout(memberId: Long) = ApiResponse(200, "ok", Unit)
+    override suspend fun registerFcmToken(req: FcmTokenRequest) = ApiResponse(200, "ok", Unit)
 
     // ── 멤버 ─────────────────────────────────────────────────────
     override suspend fun getMyInfo(memberId: Long) = ApiResponse(200, "ok", MemberMeResponse(
@@ -135,26 +131,12 @@ object MockApiService : ApiService {
         return ApiResponse(200, "ok", item)
     }
 
-    override suspend fun createSaleItemWithImage(
-        sellerId: Long,
-        name: RequestBody, discountPrice: RequestBody, originalPrice: RequestBody,
-        quantityTotal: RequestBody, pickupStart: RequestBody, pickupEnd: RequestBody,
-        availableDate: RequestBody, menuItemId: RequestBody?, madeAt: RequestBody?,
-        allergenInfo: RequestBody?, images: List<MultipartBody.Part>?,
-    ): ApiResponse<SaleItemApiResponse> = ApiResponse(400, "not supported in mock", null)
-
     override suspend fun updateSaleStatus(id: Long, sellerId: Long, req: UpdateSaleStatusRequest): ApiResponse<SaleItemApiResponse> {
         val idx = saleItems.indexOfFirst { it.id == id }
         if (idx < 0) return ApiResponse(404, "not found", null)
         saleItems[idx] = saleItems[idx].copy(status = req.status)
         return ApiResponse(200, "ok", saleItems[idx])
     }
-
-    override suspend fun updateSaleStatusViaPost(
-        id: Long,
-        sellerId: Long,
-        req: UpdateSaleStatusRequest,
-    ): ApiResponse<SaleItemApiResponse> = updateSaleStatus(id, sellerId, req)
 
     override suspend fun updateSaleItem(id: Long, sellerId: Long, req: UpdateSaleItemRequest): ApiResponse<SaleItemApiResponse> {
         val idx = saleItems.indexOfFirst { it.id == id }
@@ -167,33 +149,14 @@ object MockApiService : ApiService {
         return ApiResponse(200, "ok", saleItems[idx])
     }
 
-    override suspend fun updateSaleItemViaPost(
-        id: Long,
-        sellerId: Long,
-        req: UpdateSaleItemRequest,
-    ): ApiResponse<SaleItemApiResponse> = updateSaleItem(id, sellerId, req)
-
-    override suspend fun cancelSaleItem(id: Long, sellerId: Long): Response<ResponseBody> {
+    override suspend fun cancelSaleItem(id: Long, sellerId: Long): ApiResponse<Unit> {
         val idx = saleItems.indexOfFirst { it.id == id }
         if (idx >= 0) saleItems[idx] = saleItems[idx].copy(status = SaleStatus.Expired.apiValue)
-        return emptySuccessResponse()
+        return ApiResponse(200, "ok", Unit)
     }
-
-    override suspend fun cancelSaleItemViaPost(id: Long, sellerId: Long): Response<ResponseBody> =
-        cancelSaleItem(id, sellerId)
 
     // ── 메뉴 ─────────────────────────────────────────────────────
     override suspend fun getMenus(sellerId: Long) = ApiResponse(200, "ok", menus.toList())
-
-    override suspend fun addMenu(sellerId: Long, req: MenuItemRequest): ApiResponse<MenuItemApiResponse> {
-        val menu = MenuItemApiResponse(
-            id = (menus.maxOfOrNull { it.id } ?: 0L) + 1L,
-            name = req.name,
-            originalPrice = req.originalPrice,
-        )
-        menus.add(menu)
-        return ApiResponse(200, "ok", menu)
-    }
 
     override suspend fun addMenuWithImage(
         sellerId: Long,
@@ -214,16 +177,10 @@ object MockApiService : ApiService {
         return ApiResponse(200, "ok", menus[idx])
     }
 
-    override suspend fun deleteMenu(menuItemId: Long, sellerId: Long): Response<ResponseBody> {
+    override suspend fun deleteMenu(menuItemId: Long, sellerId: Long): ApiResponse<Unit> {
         menus.removeIf { it.id == menuItemId }
-        return emptySuccessResponse()
+        return ApiResponse(200, "ok", Unit)
     }
-
-    override suspend fun deleteMenuViaPost(menuItemId: Long, sellerId: Long): Response<ResponseBody> =
-        deleteMenu(menuItemId, sellerId)
-
-    private fun emptySuccessResponse(): Response<ResponseBody> =
-        Response.success("""{"code":200,"message":"ok","data":null}""".toResponseBody("application/json".toMediaType()))
 
     // ── 주문 ─────────────────────────────────────────────────────
     override suspend fun getOrders(sellerId: Long) = ApiResponse(200, "ok", orders.toList())

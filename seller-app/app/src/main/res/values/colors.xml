@@ -3,36 +3,50 @@
     <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>
 
-    <!-- Primary: 딥 틸 + 인디고 조합 -->
-    <color name="primary">#0B7A6E</color>
-    <color name="primary_light">#C8EDEA</color>
-    <color name="primary_dark">#065950</color>
+    <!-- Primary: 구매자 앱과 동일한 브랜드 코럴 오렌지 (시흥시 BI 오렌지 계보) -->
+    <color name="primary">#FFC94B28</color>
+    <color name="primary_light">#FFFFE7DE</color>
+    <color name="primary_dark">#FF8A2F19</color>
 
-    <!-- Status: 구매자 앱 보조/상태 색과 통일 -->
-    <color name="online">#FF1D7F52</color>
-    <color name="success">#FF1D7F52</color>
+    <!-- Status: 구매자 앱과 값 동일 -->
+    <color name="online">#FF16704A</color>
+    <color name="success">#FF16704A</color>
     <color name="success_light">#FFB0F1D2</color>
-    <color name="danger">#FFE53935</color>
-    <color name="warning">#FFE07800</color>
+    <color name="danger">#FFD32F3D</color>
+    <color name="danger_light">#FFFFDAD4</color>
+    <color name="warning">#FFA65400</color>
+    <color name="warning_light">#FFFFF3E0</color>
+    <color name="gold">#FFB57A00</color>
 
-    <!-- Surface: 구매자 앱의 따뜻한 오프화이트 계열과 통일 -->
-    <color name="surface">#FFF5EFEC</color>
-    <color name="surface_alt">#FFFFFBF8</color>
-    <color name="secondary_button_bg">#E3F1EC</color>
+    <!-- Surface: 구매자 앱의 TDS 그레이 계열과 통일 -->
+    <color name="surface">#FFF5F5F7</color>
+    <color name="surface_alt">#FFFFFFFF</color>
+    <color name="secondary_button_bg">#FFFBEDE8</color>
 
     <!-- Text -->
-    <color name="text">#FF1A1110</color>
-    <color name="text_sub">#FF534341</color>
-    <color name="text_muted">#FF998C8A</color>
+    <color name="text">#FF1D1D1F</color>
+    <color name="text_sub">#FF333333</color>
+    <color name="text_muted">#FF6B6B6B</color>
 
     <!-- Border -->
-    <color name="border">#FFE2C8C0</color>
-    <color name="border_light">#FFEDE8E5</color>
+    <color name="border">#FFE0E0E0</color>
+    <color name="border_light">#FFF0F0F0</color>
+
+    <!-- 매출 파이차트 — 전부 흰 라벨 대비 4.5:1 이상 -->
+    <color name="chart_1">#FFC94B28</color>
+    <color name="chart_2">#FF16704A</color>
+    <color name="chart_3">#FF2E4A8A</color>
+    <color name="chart_4">#FF8A5D00</color>
+    <color name="chart_5">#FF7A4E9E</color>
+
+    <!-- 알림 반경 지도 -->
+    <color name="map_land">#FFE8F0E9</color>
+    <color name="map_radius_fill">#332E7D32</color>
 
     <!-- Neumorphic surface lighting -->
     <color name="neu_highlight">#FFFFFFFF</color>
-    <color name="neu_shadow">#24C7B3AD</color>
-    <color name="neu_shadow_strong">#33B69C94</color>
+    <color name="neu_shadow">#14B0B8C1</color>
+    <color name="neu_shadow_strong">#1FB0B8C1</color>
 
     <!-- Transparent -->
     <color name="transparent">#00000000</color>

@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
+import com.example.deuktemsiru_seller.R
 import kotlin.math.min
 
 class PieChartView @JvmOverloads constructor(
@@ -13,10 +14,11 @@ class PieChartView @JvmOverloads constructor(
     data class Slice(val label: String, val value: Int)
 
     private var slices: List<Slice> = emptyList()
+    // 값은 res/values/colors.xml 의 chart_* — 전부 흰 라벨 대비 4.5:1 이상
     private val colors = listOf(
-        0xFF0B7A6E.toInt(), 0xFF2E4A8A.toInt(), 0xFF4DB6AC.toInt(),
-        0xFF5C7BC0.toInt(), 0xFF80CBC4.toInt(),
-    )
+        R.color.chart_1, R.color.chart_2, R.color.chart_3,
+        R.color.chart_4, R.color.chart_5,
+    ).map { context.getColor(it) }
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE

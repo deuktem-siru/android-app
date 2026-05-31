@@ -62,7 +62,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:background="@drawable/bg_card_white"
-    android:elevation="2dp"
+    android:elevation="0dp"
             android:padding="16dp"
             android:layout_marginBottom="12dp">
 
@@ -70,7 +70,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="할인율"
-                android:textSize="16sp"
+                android:textSize="17sp"
                 android:textColor="@color/text_sub"
                 android:layout_marginBottom="10dp" />
 
@@ -89,7 +89,7 @@
                     android:layout_marginEnd="6dp"
                     android:gravity="center"
                     android:text="% 할인율"
-                    android:textSize="16sp"
+                    android:textSize="17sp"
                     android:background="@drawable/bg_discount_preset_selected"
                     android:textColor="@color/white"
                     android:clickable="true"
@@ -103,7 +103,7 @@
                     android:layout_marginStart="6dp"
                     android:gravity="center"
                     android:text="₩ 직접 입력"
-                    android:textSize="16sp"
+                    android:textSize="17sp"
                     android:background="@drawable/bg_discount_preset_normal"
                     android:textColor="@color/text_sub"
                     android:clickable="true"
@@ -132,7 +132,7 @@
                     android:layout_marginEnd="6dp"
                     android:gravity="center"
                     android:text="10%"
-                    android:textSize="16sp"
+                    android:textSize="17sp"
                     android:background="@drawable/bg_discount_preset_normal"
                     android:textColor="@color/text_sub"
                     android:clickable="true"
@@ -146,7 +146,7 @@
                     android:layout_marginHorizontal="6dp"
                     android:gravity="center"
                     android:text="20%"
-                    android:textSize="16sp"
+                    android:textSize="17sp"
                     android:background="@drawable/bg_discount_preset_normal"
                     android:textColor="@color/text_sub"
                     android:clickable="true"
@@ -160,7 +160,7 @@
                     android:layout_marginHorizontal="6dp"
                     android:gravity="center"
                     android:text="30%"
-                    android:textSize="16sp"
+                    android:textSize="17sp"
                     android:background="@drawable/bg_discount_preset_selected"
                     android:textColor="@color/white"
                     android:clickable="true"
@@ -174,7 +174,7 @@
                     android:layout_marginStart="6dp"
                     android:gravity="center"
                     android:text="40%"
-                    android:textSize="16sp"
+                    android:textSize="17sp"
                     android:background="@drawable/bg_discount_preset_normal"
                     android:textColor="@color/text_sub"
                     android:clickable="true"
@@ -256,7 +256,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:background="@drawable/bg_card_white"
-    android:elevation="2dp"
+    android:elevation="0dp"
             android:padding="16dp"
             android:layout_marginBottom="12dp">
 
@@ -264,7 +264,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="판매 수량"
-                android:textSize="16sp"
+                android:textSize="17sp"
                 android:textColor="@color/text_sub"
                 android:layout_marginBottom="10dp" />
 
@@ -328,7 +328,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:background="@drawable/bg_card_white"
-    android:elevation="2dp"
+    android:elevation="0dp"
             android:padding="16dp"
             android:layout_marginBottom="12dp">
 
@@ -336,7 +336,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="픽업 시간"
-                android:textSize="16sp"
+                android:textSize="17sp"
                 android:textColor="@color/text_sub"
                 android:layout_marginBottom="12dp" />
 
@@ -353,7 +353,7 @@
                     android:layout_marginEnd="8dp"
                     android:layout_weight="1"
                     android:background="@drawable/bg_card_primary_border"
-    android:elevation="2dp"
+    android:elevation="0dp"
                     android:clickable="true"
                     android:focusable="true"
                     android:foreground="?attr/selectableItemBackground"

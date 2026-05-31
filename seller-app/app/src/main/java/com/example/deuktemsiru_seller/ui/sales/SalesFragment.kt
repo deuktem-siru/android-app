@@ -98,10 +98,6 @@ class SalesFragment : Fragment() {
         binding.tvSalesTitle.text = currentPeriod.title
     }
 
-    private fun computeDateStr(): String {
-        return targetDate().format(DateTimeFormatter.ISO_LOCAL_DATE)
-    }
-
     private fun targetDate(): LocalDate = LocalDate.now().offsetBy(currentPeriod, currentOffset)
 
     private fun loadSales() {
@@ -155,23 +151,19 @@ class SalesFragment : Fragment() {
         val todayData = salesByDate.last().second
         binding.tvTotalSales.text = entries.last().value.toWon()
         binding.barChart.setEntries(entries)
-
-        val totalOrders = todayData?.todayOrderCount ?: 0
-        binding.tvWasteCount.text = "절감 폐기 ${totalOrders}개"
-        val carbonSaved = todayData?.carbonSavedKg ?: 0f
-        binding.tvCo2Amount.text = "탄소 ${carbonSaved.toInt()}kg 절감"
-
-        val topMenus = todayData?.topMenus ?: emptyList()
-        renderTopMenus(topMenus)
-        binding.pieChart.setSlices(topMenus.map { PieChartView.Slice(it.name, it.count) })
-        updateInsight(entries.map { it.value }, topMenus)
+        renderSalesSummary(
+            orderCount = todayData?.todayOrderCount ?: 0,
+            carbonSavedKg = todayData?.carbonSavedKg ?: 0f,
+            topMenus = todayData?.topMenus ?: emptyList(),
+            amounts = entries.map { it.value },
+        )
     }
 
     private suspend fun loadPeriodSales() {
         val sales = RetrofitClient.api.getSales(
             sellerId = RetrofitClient.memberId,
             period = currentPeriod.apiValue,
-            date = computeDateStr(),
+            date = targetDate().format(DateTimeFormatter.ISO_LOCAL_DATE),
         ).data ?: return
 
         val total = sales.salesData.sumOf { it.amount }
@@ -185,25 +177,31 @@ class SalesFragment : Fragment() {
             )
         }
         binding.barChart.setEntries(entries)
-
-        val totalOrders = sales.todayOrderCount
-        binding.tvWasteCount.text = "절감 폐기 ${totalOrders}개"
-        val carbonSaved = sales.carbonSavedKg ?: 0f
-        binding.tvCo2Amount.text = "탄소 ${carbonSaved.toInt()}kg 절감"
-
-        renderTopMenus(sales.topMenus)
-        binding.pieChart.setSlices(sales.topMenus.map { PieChartView.Slice(it.name, it.count) })
-        updateInsight(sales.salesData.map { it.amount }, sales.topMenus)
+        renderSalesSummary(
+            orderCount = sales.todayOrderCount,
+            carbonSavedKg = sales.carbonSavedKg ?: 0f,
+            topMenus = sales.topMenus,
+            amounts = sales.salesData.map { it.amount },
+        )
     }
 
     private fun renderEmptySales() {
         binding.tvTotalSales.text = 0.toWon()
         binding.barChart.setEntries(emptyList())
-        binding.tvWasteCount.text = "절감 폐기 0개"
-        binding.tvCo2Amount.text = "탄소 0kg 절감"
-        renderTopMenus(emptyList())
-        binding.pieChart.setSlices(emptyList())
-        updateInsight(emptyList(), emptyList())
+        renderSalesSummary(orderCount = 0, carbonSavedKg = 0f, topMenus = emptyList(), amounts = emptyList())
+    }
+
+    private fun renderSalesSummary(
+        orderCount: Int,
+        carbonSavedKg: Float,
+        topMenus: List<TopMenu>,
+        amounts: List<Int>,
+    ) {
+        binding.tvWasteCount.text = "절감 폐기 ${orderCount}개"
+        binding.tvCo2Amount.text = "탄소 ${carbonSavedKg.toInt()}kg 절감"
+        renderTopMenus(topMenus)
+        binding.pieChart.setSlices(topMenus.map { PieChartView.Slice(it.name, it.count) })
+        updateInsight(amounts, topMenus)
     }
 
     private fun updatePeriodLabel() {

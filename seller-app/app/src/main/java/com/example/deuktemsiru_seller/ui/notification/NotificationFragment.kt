@@ -8,19 +8,19 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.deuktemsiru_seller.R
 import com.example.deuktemsiru_seller.data.SessionManager
 import com.example.deuktemsiru_seller.databinding.FragmentNotificationBinding
-import com.example.deuktemsiru_seller.network.NotificationTarget
 import com.example.deuktemsiru_seller.network.NotificationApiResponse
-import com.example.deuktemsiru_seller.util.dp
+import com.example.deuktemsiru_seller.network.NotificationTarget
 import com.example.deuktemsiru_seller.network.RetrofitClient
 import com.example.deuktemsiru_seller.network.SendNotificationRequest
+import com.example.deuktemsiru_seller.util.dp
 import com.example.deuktemsiru_seller.util.renderChildren
 import com.example.deuktemsiru_seller.util.setSelectedChip
-import com.example.deuktemsiru_seller.util.simpleTextWatcher
 import com.example.deuktemsiru_seller.util.toast
 import com.example.deuktemsiru_seller.util.visibleIf
 import kotlinx.coroutines.launch
@@ -77,10 +77,13 @@ class NotificationFragment : Fragment() {
             updateTargetUI()
         }
 
-        binding.btnRadius3.setOnClickListener { selectedRadiusKm = 3; updateRadiusUI() }
-        binding.btnRadius5.setOnClickListener { selectedRadiusKm = 5; updateRadiusUI() }
-        binding.btnRadius10.setOnClickListener { selectedRadiusKm = 10; updateRadiusUI() }
+        radiusButtons.forEach { (btn, km) ->
+            btn.setOnClickListener { selectedRadiusKm = km; updateRadiusUI() }
+        }
     }
+
+    private val radiusButtons
+        get() = listOf(binding.btnRadius3 to 3, binding.btnRadius5 to 5, binding.btnRadius10 to 10)
 
     private fun updateTargetUI() {
         val isRegular = selectedTarget == NotificationTarget.Regular
@@ -93,11 +96,7 @@ class NotificationFragment : Fragment() {
     }
 
     private fun updateRadiusUI() {
-        listOf(
-            Pair(binding.btnRadius3, 3),
-            Pair(binding.btnRadius5, 5),
-            Pair(binding.btnRadius10, 10),
-        ).forEach { (btn, km) ->
+        radiusButtons.forEach { (btn, km) ->
             btn.setSelectedChip(
                 selected = km == selectedRadiusKm,
                 selectedBackground = R.drawable.bg_button_primary,
@@ -111,10 +110,10 @@ class NotificationFragment : Fragment() {
     }
 
     private fun setupMessageInput() {
-        binding.etMessage.addTextChangedListener(simpleTextWatcher { text ->
-            binding.tvCharCount.text = "${text.length}/40"
+        binding.etMessage.doOnTextChanged { text, _, _, _ ->
+            binding.tvCharCount.text = "${text?.length ?: 0}/40"
             binding.tvPreviewMessage.text = text
-        })
+        }
     }
 
     private fun setupQuickPhrases() {
@@ -158,18 +157,16 @@ class NotificationFragment : Fragment() {
             items = loadPhrases(),
             emptyView = { View(requireContext()) },
         ) { phrase ->
-            val chip = TextView(requireContext()).apply {
+            TextView(requireContext()).apply {
                 text = phrase
                 textSize = 12f
                 setTextColor(requireContext().getColor(R.color.text_sub))
                 setBackgroundResource(R.drawable.bg_chip_orange)
-                val hPad = (12 * resources.displayMetrics.density).toInt()
-                val vPad = (4 * resources.displayMetrics.density).toInt()
-                setPadding(hPad, vPad, hPad, vPad)
-                val lp = ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, (34 * resources.displayMetrics.density).toInt())
-                lp.marginEnd = (8 * resources.displayMetrics.density).toInt()
-                lp.bottomMargin = (6 * resources.displayMetrics.density).toInt()
-                layoutParams = lp
+                setPadding(12.dp, 4.dp, 12.dp, 4.dp)
+                layoutParams = ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, 34.dp).apply {
+                    marginEnd = 8.dp
+                    bottomMargin = 6.dp
+                }
                 gravity = android.view.Gravity.CENTER
                 isClickable = true
                 isFocusable = true
@@ -181,7 +178,6 @@ class NotificationFragment : Fragment() {
                     }
                 }
             }
-            chip
         }
     }
 

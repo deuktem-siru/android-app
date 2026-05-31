@@ -51,19 +51,14 @@ class MyPageFragment : Fragment() {
         }
 
         binding.itemCustomerService.setOnClickListener {
-            AlertDialog.Builder(requireContext())
-                .setTitle("고객센터")
-                .setMessage("운영시간: 평일 09:00 – 18:00\n전화: 1588-0000\n이메일: help@siru.co.kr")
-                .setPositiveButton("확인", null)
-                .show()
+            showInfoDialog("고객센터", "운영시간: 평일 09:00 – 18:00\n전화: 1588-0000\n이메일: help@siru.co.kr")
         }
 
         binding.itemPolicy.setOnClickListener {
-            AlertDialog.Builder(requireContext())
-                .setTitle("서비스 이용약관")
-                .setMessage("득템시루 판매자 서비스 이용약관\n\n판매자는 본 서비스를 통해 마감 할인 상품을 등록하고 관리할 수 있습니다.\n\n자세한 약관은 공식 웹사이트를 참고해주세요.")
-                .setPositiveButton("확인", null)
-                .show()
+            showInfoDialog(
+                "서비스 이용약관",
+                "득템시루 판매자 서비스 이용약관\n\n판매자는 본 서비스를 통해 마감 할인 상품을 등록하고 관리할 수 있습니다.\n\n자세한 약관은 공식 웹사이트를 참고해주세요.",
+            )
         }
 
         binding.itemLogout.setOnClickListener {
@@ -78,6 +73,14 @@ class MyPageFragment : Fragment() {
         }
 
         binding.tvVersion.text = "득템시루 판매자 v1.0  |  Member #${session.memberId}"
+    }
+
+    private fun showInfoDialog(title: String, message: String) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton("확인", null)
+            .show()
     }
 
     override fun onDestroyView() {

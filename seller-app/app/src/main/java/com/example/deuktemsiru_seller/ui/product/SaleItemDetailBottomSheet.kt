@@ -49,8 +49,8 @@ class SaleItemDetailBottomSheet : BottomSheetDialogFragment() {
 
         val (statusText, bgRes, textColor) = when (item.saleStatus) {
             SaleStatus.Available -> Triple("판매중", R.drawable.bg_rounded_success_light, requireContext().getColor(R.color.success))
-            SaleStatus.Paused -> Triple("판매중지", R.drawable.bg_rounded_danger, 0xFFFFFFFF.toInt())
-            SaleStatus.SoldOut -> Triple("품절", R.drawable.bg_rounded_danger, 0xFFFFFFFF.toInt())
+            SaleStatus.Paused -> Triple("판매중지", R.drawable.bg_rounded_danger, requireContext().getColor(R.color.white))
+            SaleStatus.SoldOut -> Triple("품절", R.drawable.bg_rounded_danger, requireContext().getColor(R.color.white))
             else        -> Triple("종료",   R.drawable.bg_rounded_muted,          requireContext().getColor(R.color.text_muted))
         }
         binding.tvDetailStatus.text = statusText
