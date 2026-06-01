@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:left="@dimen/relief_offset_x" android:top="@dimen/relief_offset_y">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/neu_shadow" />
+            <corners android:radius="@dimen/radius_md" />
+        </shape>
+    </item>
+    <item android:right="@dimen/relief_offset_x" android:bottom="@dimen/relief_offset_y">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/neu_highlight" />
+            <corners android:radius="@dimen/radius_md" />
+        </shape>
+    </item>
+    <item android:left="@dimen/relief_inset" android:top="@dimen/relief_inset" android:right="@dimen/relief_inset" android:bottom="@dimen/relief_inset_bottom">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/surface_alt" />
+            <stroke android:width="0.5dp" android:color="@color/border_light" />
+            <corners android:radius="@dimen/radius_md" />
+        </shape>
+    </item>
+</layer-list>

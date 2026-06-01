@@ -1,0 +1,200 @@
+package com.example.deuktemsiru_buyer.presentation.view.pickup
+
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import com.example.deuktemsiru_buyer.R
+import com.example.deuktemsiru_buyer.data.repository.appSession
+import com.example.deuktemsiru_buyer.domain.model.minutesUntilClose
+import com.example.deuktemsiru_buyer.databinding.FragmentPickupBinding
+import com.example.deuktemsiru_buyer.domain.model.OrderDetailResponse
+import com.example.deuktemsiru_buyer.domain.model.Result
+import com.example.deuktemsiru_buyer.util.formatPrice
+import com.example.deuktemsiru_buyer.util.generateQrBitmap
+import com.example.deuktemsiru_buyer.util.startCountdown
+import com.example.deuktemsiru_buyer.util.toHourMinute
+import com.example.deuktemsiru_buyer.util.toast
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+class PickupFragment : Fragment() {
+
+    private val screenModel by lazy { com.example.deuktemsiru_buyer.AppGraph.model(this) }
+
+    private var _binding: FragmentPickupBinding? = null
+    private val binding get() = _binding!!
+
+    private var timerJob: Job? = null
+    private var pollJob: Job? = null
+    private var pickupCode = "----"
+    private var storeLat = 0.0
+    private var storeLng = 0.0
+    private var storeName = ""
+    private val storeRepository by lazy { com.example.deuktemsiru_buyer.AppGraph.stores(this) }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentPickupBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val session = requireContext().appSession
+        val orderId = session.lastOrderId
+        val storeId = arguments?.getLong("storeId") ?: 0L
+
+        loadStoreFallback(storeId)
+
+        if (orderId > 0L) {
+            loadOrder(orderId)
+        } else {
+            showPendingUi()
+        }
+
+        binding.llCode.setOnLongClickListener {
+            val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            clipboard.setPrimaryClip(ClipData.newPlainText("픽업코드", pickupCode))
+            toast("픽업 코드가 복사되었어요")
+            true
+        }
+
+        binding.btnDirections.setOnClickListener {
+            if (storeLat == 0.0 && storeLng == 0.0) {
+                toast("가게 위치를 불러오는 중이에요")
+                return@setOnClickListener
+            }
+            findNavController().navigate(
+                R.id.action_pickup_to_routeMap,
+                Bundle().apply {
+                    putDouble("destLat", storeLat)
+                    putDouble("destLng", storeLng)
+                    putString("destName", storeName)
+                }
+            )
+        }
+
+        binding.btnCall.setOnClickListener {
+            val phone = binding.tvStoreAddress.tag as? String ?: ""
+            if (phone.isBlank()) {
+                toast("전화번호를 불러오는 중...")
+            } else {
+                startActivity(Intent(Intent.ACTION_DIAL, Uri.parse("tel:$phone")))
+            }
+        }
+    }
+
+    private fun loadOrder(orderId: Long) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val order = runCatching { screenModel.getOrder(orderId).data }.getOrNull()
+            if (order != null) applyOrderUi(order) else waitForConfirmedOrder(orderId)
+        }
+    }
+
+    private fun applyOrderUi(order: OrderDetailResponse) {
+        if (order.status == "CONFIRMED") {
+            showConfirmedUi(order)
+        } else {
+            waitForConfirmedOrder(order.orderId)
+        }
+        binding.tvStoreName.text = order.storeName
+        binding.tvOrderMenu.text = order.items.joinToString(", ") { "${it.productName} x${it.quantity}" }
+        binding.tvPaidPrice.text = order.totalPrice.formatPrice()
+        storeName = order.storeName
+    }
+
+    private fun showPendingUi() {
+        if (_binding == null) return
+        binding.tvStatusBadge.text = "수락 대기 중"
+        binding.tvPendingMessage.visibility = View.VISIBLE
+        binding.llPickupContent.visibility = View.GONE
+    }
+
+    private fun showConfirmedUi(order: OrderDetailResponse) {
+        if (_binding == null) return
+        pickupCode = order.pickupCode.orEmpty()
+
+        binding.tvStatusBadge.text = "픽업 대기 중"
+        binding.tvPendingMessage.visibility = View.GONE
+        binding.llPickupContent.visibility = View.VISIBLE
+
+        val pickupEndTime = order.pickupTime?.substringAfter("~", order.pickupTime)
+        binding.tvPickupTime.text = if (pickupEndTime != null) "${pickupEndTime.toHourMinute()}까지" else "픽업 시간 확인 중"
+        binding.tvPickupCode.text = pickupCode.ifBlank { "----" }
+        showQrCode(pickupCode)
+        startPickupCountdown(remainingSecondsUntil(pickupEndTime))
+    }
+
+    private fun waitForConfirmedOrder(orderId: Long) {
+        showPendingUi()
+        pollJob?.cancel()
+        pollJob = viewLifecycleOwner.lifecycleScope.launch {
+            while (_binding != null) {
+                delay(5_000)
+                val order = runCatching { screenModel.getOrder(orderId).data }.getOrNull() ?: continue
+                if (order.status == "CONFIRMED") {
+                    applyOrderUi(order)
+                    break
+                }
+            }
+        }
+    }
+
+    private fun loadStoreFallback(storeId: Long) {
+        if (storeId <= 0L) return
+        viewLifecycleOwner.lifecycleScope.launch {
+            when (val result = storeRepository.getStore(storeId)) {
+                is Result.Success -> {
+                    val store = result.data
+                    storeLat = store.latitude
+                    storeLng = store.longitude
+                    if (storeName.isBlank()) {
+                        storeName = store.name
+                        binding.tvStoreName.text = store.name
+                    }
+                    binding.tvStoreAddress.text = store.address
+                    binding.tvStoreAddress.tag = store.phone
+                }
+                is Result.Error -> binding.tvStoreAddress.tag = ""
+            }
+        }
+    }
+
+    private fun showQrCode(code: String) {
+        if (code.isBlank()) return
+        val bitmap = generateQrBitmap(code, size = 400)
+        binding.ivQrCode.isVisible = bitmap != null
+        if (bitmap != null) binding.ivQrCode.setImageBitmap(bitmap)
+    }
+
+    private fun remainingSecondsUntil(pickupEnd: String?): Long {
+        if (pickupEnd == null) return 42 * 60L
+        return minutesUntilClose(pickupEnd) * 60L
+    }
+
+    private fun startPickupCountdown(totalSeconds: Long) {
+        timerJob = startCountdown(totalSeconds, timerJob) { _binding?.tvCountdown?.text = it }
+    }
+
+    override fun onDestroyView() {
+        timerJob?.cancel()
+        pollJob?.cancel()
+        super.onDestroyView()
+        _binding = null
+    }
+}

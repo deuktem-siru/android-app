@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/surface">
+
+    <!-- Header -->
+    <LinearLayout
+        android:id="@+id/ll_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/surface_alt"
+        android:paddingHorizontal="@dimen/spacing_lg"
+        android:paddingTop="16dp"
+        android:paddingBottom="12dp"
+        android:elevation="0dp">
+
+        <!-- Top row: location + icons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/touch_target_min"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_location"
+                android:contentDescription="위치" />
+
+            <TextView
+                android:id="@+id/tv_location"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="시흥시 정왕동"
+                android:textSize="17sp"
+                android:fontFamily="sans-serif-medium"
+                android:textColor="@color/text"
+                android:layout_marginStart="4dp" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_marginEnd="8dp"
+                android:contentDescription="시흥시 BI"
+                android:scaleType="fitCenter"
+                android:src="@drawable/img_siheung_bi" />
+
+            <ImageButton
+                android:id="@+id/btn_bell"
+                android:layout_width="@dimen/touch_target_min"
+                android:layout_height="@dimen/touch_target_min"
+                android:src="@drawable/ic_bell"
+                android:background="@drawable/bg_icon_button"
+                android:padding="10dp"
+                android:contentDescription="알림" />
+
+            <FrameLayout
+                android:layout_width="@dimen/touch_target_min"
+                android:layout_height="@dimen/touch_target_min">
+
+                <ImageButton
+                    android:id="@+id/btn_cart"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/ic_cart"
+                    android:background="@drawable/bg_icon_button"
+                    android:padding="10dp"
+                    android:contentDescription="장바구니" />
+
+                <TextView
+                    android:id="@+id/tv_cart_badge"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="top|end"
+                    android:layout_margin="4dp"
+                    android:background="@drawable/bg_cart_badge"
+                    android:gravity="center"
+                    android:textColor="@color/white"
+                    android:textSize="10sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:visibility="gone" />
+
+            </FrameLayout>
+        </LinearLayout>
+
+        <!-- Search bar: rounded pill -->
+        <LinearLayout
+            android:id="@+id/ll_search"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="@drawable/bg_search_bar"
+            android:paddingHorizontal="12dp">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_search"
+                android:contentDescription="검색"
+                android:layout_marginEnd="8dp" />
+
+            <EditText
+                android:id="@+id/et_search"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:hint="@string/home_search_hint"
+                android:textSize="@dimen/text_body"
+                android:textColor="@color/text"
+                android:textColorHint="@color/text_muted"
+                android:background="@android:color/transparent"
+                android:inputType="text"
+                android:imeOptions="actionSearch"
+                android:maxLines="1" />
+
+            <ImageButton
+                android:id="@+id/btn_search"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/ic_search"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="검색" />
+        </LinearLayout>
+
+        <!-- Category chips -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:layout_marginTop="10dp"
+            android:clipToPadding="false">
+
+            <LinearLayout
+                android:id="@+id/ll_categories"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/chip_all"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:gravity="center"
+                    android:paddingHorizontal="16dp"
+                    android:text="@string/cat_all"
+                    android:textSize="13sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="@color/white"
+                    android:background="@drawable/bg_chip_selected"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:id="@+id/chip_korean"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:gravity="center"
+                    android:paddingHorizontal="16dp"
+                    android:text="@string/cat_korean"
+                    android:textSize="13sp"
+                    android:textColor="@color/text"
+                    android:background="@drawable/bg_chip_unselected"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:id="@+id/chip_western"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:gravity="center"
+                    android:paddingHorizontal="16dp"
+                    android:text="@string/cat_western"
+                    android:textSize="13sp"
+                    android:textColor="@color/text"
+                    android:background="@drawable/bg_chip_unselected"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:id="@+id/chip_cafe_dessert"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:gravity="center"
+                    android:paddingHorizontal="16dp"
+                    android:text="@string/cat_cafe_dessert"
+                    android:textSize="13sp"
+                    android:textColor="@color/text"
+                    android:background="@drawable/bg_chip_unselected"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:id="@+id/chip_bakery"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:gravity="center"
+                    android:paddingHorizontal="16dp"
+                    android:text="@string/cat_bakery"
+                    android:textSize="13sp"
+                    android:textColor="@color/text"
+                    android:background="@drawable/bg_chip_unselected"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:id="@+id/chip_cafe"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:gravity="center"
+                    android:paddingHorizontal="16dp"
+                    android:text="@string/cat_cafe"
+                    android:textSize="13sp"
+                    android:textColor="@color/text"
+                    android:background="@drawable/bg_chip_unselected" />
+            </LinearLayout>
+        </HorizontalScrollView>
+
+    </LinearLayout>
+
+    <!-- Scrollable content -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="168dp"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Section 1: 마감 임박 -->
+            <!-- Section 2: 내 주변 득템 가능한 가게 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginHorizontal="@dimen/spacing_lg"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="@dimen/spacing_md"
+                    android:paddingTop="16dp"
+                    android:paddingBottom="12dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/home_section_nearby"
+                        android:textSize="@dimen/text_title"
+                        android:fontFamily="sans-serif-medium"
+                        android:textColor="@color/text" />
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_stores"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="8dp"
+                    android:clipToPadding="false"
+                    android:nestedScrollingEnabled="false" />
+
+            </LinearLayout>
+
+            <!-- Empty state -->
+            <LinearLayout
+                android:id="@+id/ll_empty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="48dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="96dp"
+                    android:layout_height="96dp"
+                    android:contentDescription="시흥시 캐릭터"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/img_siheung_character" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:id="@+id/tv_empty_title"
+            android:text="@string/home_empty"
+                    android:textSize="@dimen/text_title"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="@color/text"
+                    android:gravity="center" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:id="@+id/tv_empty_body"
+            android:text="@string/home_empty_sub"
+                    android:textSize="@dimen/text_body"
+                    android:textColor="@color/text_sub"
+                    android:gravity="center"
+                    android:lineSpacingExtra="4dp" />
+                <Button
+            android:id="@+id/btn_empty_action"
+            style="@style/RecoveryAction"
+            android:text="@string/browse_stores" />
+    </LinearLayout>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
