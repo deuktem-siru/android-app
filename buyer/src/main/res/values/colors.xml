@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+
+    <!-- ============================================================ -->
+    <!-- M3 Light Color Roles                                          -->
+    <!-- Brand orange: 런처 원색. 흰 글자 면과 작은 텍스트에는 primary 사용. -->
+    <color name="brand_orange">#FFED6C00</color>
+
+    <!-- Primary: #B64E00 (가독성 보정 오렌지)                          -->
+    <!-- Secondary: #16704A (시루 그린)                                -->
+    <!-- Tertiary: #8A5D00 (M3 롤) / warning #A65400 (경고·별점 그래픽)  -->
+    <!-- ============================================================ -->
+
+    <!-- Primary -->
+    <color name="md_theme_light_primary">#FFB64E00</color>
+    <color name="md_theme_light_onPrimary">#FFFFFF</color>
+    <color name="md_theme_light_primaryContainer">#FFFFF0E3</color>
+    <color name="md_theme_light_onPrimaryContainer">#351500</color>
+
+    <!-- Secondary (시루 그린) -->
+    <color name="md_theme_light_secondary">#FF16704A</color>
+    <color name="md_theme_light_onSecondary">#FFFFFF</color>
+    <color name="md_theme_light_secondaryContainer">#FFB0F1D2</color>
+    <color name="md_theme_light_onSecondaryContainer">#002116</color>
+
+    <!-- Tertiary -->
+    <color name="md_theme_light_tertiary">#8A5D00</color>
+    <color name="md_theme_light_onTertiary">#FFFFFF</color>
+    <color name="md_theme_light_tertiaryContainer">#FFE08A</color>
+    <color name="md_theme_light_onTertiaryContainer">#251A00</color>
+
+    <!-- Error -->
+    <color name="md_theme_light_error">#D32F3D</color>
+    <color name="md_theme_light_onError">#FFFFFF</color>
+    <color name="md_theme_light_errorContainer">#FFDAD4</color>
+    <color name="md_theme_light_onErrorContainer">#410002</color>
+
+    <!-- Surface & Background (TDS 그레이) -->
+    <color name="md_theme_light_onBackground">@color/text</color>
+    <color name="md_theme_light_onSurface">@color/text</color>
+    <color name="md_theme_light_onSurfaceVariant">@color/text_muted</color>
+
+    <!-- Outline -->
+    <color name="md_theme_light_outline">#FF6B6B6B</color>
+    <color name="md_theme_light_outlineVariant">@color/border_light</color>
+
+    <!-- ============================================================ -->
+    <!-- M3 Dark Color Roles                                           -->
+    <!-- ============================================================ -->
+
+    <color name="md_theme_dark_primary">#FFB77D</color>
+    <color name="md_theme_dark_onPrimary">#4D2200</color>
+    <color name="md_theme_dark_primaryContainer">#843B00</color>
+    <color name="md_theme_dark_onPrimaryContainer">#FFF0E3</color>
+
+    <color name="md_theme_dark_secondary">#6AD4A4</color>
+    <color name="md_theme_dark_onSecondary">#003825</color>
+    <color name="md_theme_dark_secondaryContainer">#005237</color>
+    <color name="md_theme_dark_onSecondaryContainer">#B0F1D2</color>
+
+    <color name="md_theme_dark_tertiary">#FDBC00</color>
+    <color name="md_theme_dark_onTertiary">#3D2E00</color>
+    <color name="md_theme_dark_tertiaryContainer">#584500</color>
+    <color name="md_theme_dark_onTertiaryContainer">#FFE08A</color>
+
+    <color name="md_theme_dark_error">#FFB4AB</color>
+    <color name="md_theme_dark_onError">#690005</color>
+    <color name="md_theme_dark_errorContainer">#93000A</color>
+    <color name="md_theme_dark_onErrorContainer">#FFDAD4</color>
+
+    <color name="md_theme_dark_background">#17171C</color>
+    <color name="md_theme_dark_onBackground">#E5E8EB</color>
+    <color name="md_theme_dark_surface">#17171C</color>
+    <color name="md_theme_dark_onSurface">#E5E8EB</color>
+    <color name="md_theme_dark_surfaceVariant">#333D4B</color>
+    <color name="md_theme_dark_onSurfaceVariant">#B0B8C1</color>
+
+    <color name="md_theme_dark_outline">#6B7684</color>
+    <color name="md_theme_dark_outlineVariant">#333D4B</color>
+
+    <!-- ============================================================ -->
+    <!-- Semantic 토큰 — values-night/colors.xml 에 대응 값 존재         -->
+    <!-- ============================================================ -->
+    <color name="primary">#FFB64E00</color>
+    <color name="primary_light">#FFFFF0E3</color>
+    <color name="primary_dark">#FF843B00</color>
+
+    <color name="danger">#FFD32F3D</color>
+    <color name="danger_light">#FFFFDAD4</color>
+    <color name="warning">#FFA65400</color>
+    <color name="success">#FF16704A</color>
+    <color name="success_light">#FFB0F1D2</color>
+
+    <color name="surface">#FFF2F4F6</color>
+    <color name="surface_alt">#FFFFFFFF</color>
+    <color name="text">#FF191F28</color>
+    <color name="text_sub">#FF333D4B</color>
+    <color name="text_muted">#FF596579</color>
+    <color name="border">#FFD8DFE7</color>
+    <color name="border_light">#FFE7ECF2</color>
+    <color name="button_dark_text">#FFF9FAFB</color>
+
+    <!-- ============================================================ -->
+    <!-- 고정 브랜드 색 — 라이트/다크 동일 값.                          -->
+    <!-- 흰 텍스트를 얹는 "채워진" 브랜드 면(버튼/배지/카드) 전용.       -->
+    <!-- 톤 컨테이너(primary_light 등)는 반전되는 토큰을 그대로 쓸 것.   -->
+    <!-- ============================================================ -->
+    <color name="primary_fixed">#FFB64E00</color>
+    <color name="siru_green_fixed">#FF16704A</color>
+    <color name="danger_fixed">#FFD32F3D</color>
+
+    <!-- Opaque navigation surface, including over maps/photos. -->
+    <color name="surface_translucent">#FFFFFFFF</color>
+
+    <color name="neu_highlight">#FFFFFFFF</color>
+    <color name="neu_shadow">#FFEBEEF2</color>
+    <color name="neu_shadow_strong">#FFE1E6EC</color>
+
+    <color name="bottom_nav_surface_top">#FFFFFFFF</color>
+    <color name="bottom_nav_surface_bottom">#FFF9FAFC</color>
+    <color name="bottom_nav_edge">#FFFFFFFF</color>
+</resources>

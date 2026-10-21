@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:left="@dimen/relief_offset_x" android:top="@dimen/relief_offset_y">
+        <shape android:shape="oval">
+            <solid android:color="@color/neu_shadow_strong" />
+        </shape>
+    </item>
+    <item android:bottom="@dimen/relief_inset_bottom">
+        <shape android:shape="oval">
+            <solid android:color="@color/primary_fixed" />
+        </shape>
+    </item>
+</layer-list>
