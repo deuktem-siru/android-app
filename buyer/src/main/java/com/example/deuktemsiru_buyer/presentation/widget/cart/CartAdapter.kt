@@ -1,0 +1,83 @@
+package com.example.deuktemsiru_buyer.presentation.widget.cart
+
+import android.graphics.Paint
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
+import com.example.deuktemsiru_buyer.domain.model.CartItem
+import com.example.deuktemsiru_buyer.databinding.ItemCartBinding
+import com.example.deuktemsiru_buyer.util.formatPrice
+
+class CartAdapter(
+    items: List<CartItem>,
+    val selectedIds: MutableSet<Long> = items.map { it.menuId }.toMutableSet(),
+    private val onDelete: (CartItem) -> Unit,
+    private val onIncrease: (CartItem) -> Unit,
+    private val onDecrease: (CartItem) -> Unit,
+    private val onSelectionChanged: () -> Unit,
+) : ListAdapter<CartItem, CartAdapter.ViewHolder>(CartDiffCallback) {
+
+    init {
+        submitList(items)
+    }
+
+    inner class ViewHolder(private val binding: ItemCartBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+
+        fun bind(item: CartItem) {
+            binding.tvEmoji.text = item.emoji
+            binding.tvMenuName.text = item.menuName
+            binding.tvDiscountedPrice.text = (item.discountedPrice * item.quantity).formatPrice()
+            if (item.originalPrice > 0 && item.originalPrice != item.discountedPrice) {
+                binding.tvOriginalPrice.visibility = View.VISIBLE
+                binding.tvOriginalPrice.text = (item.originalPrice * item.quantity).formatPrice()
+                binding.tvOriginalPrice.paintFlags =
+                    binding.tvOriginalPrice.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+            } else {
+                binding.tvOriginalPrice.visibility = View.GONE
+            }
+            binding.tvQuantity.text = item.quantity.toString()
+
+            binding.cbSelect.isChecked = item.menuId in selectedIds
+            binding.cbSelect.setOnCheckedChangeListener { _, checked ->
+                if (checked) selectedIds.add(item.menuId) else selectedIds.remove(item.menuId)
+                onSelectionChanged()
+            }
+
+            binding.btnDelete.setOnClickListener { onDelete(item) }
+            binding.btnPlus.setOnClickListener { onIncrease(item) }
+            binding.btnMinus.setOnClickListener { onDecrease(item) }
+        }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
+        ViewHolder(ItemCartBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(getItem(position))
+
+    fun update(newItems: List<CartItem>) {
+        val newIds = newItems.map { it.menuId }.toSet()
+        selectedIds.retainAll(newIds)
+        submitList(newItems)
+    }
+
+    fun selectAll() {
+        selectedIds.addAll(currentList.map { it.menuId })
+        notifyItemRangeChanged(0, currentList.size)
+    }
+
+    fun deselectAll() {
+        selectedIds.clear()
+        notifyItemRangeChanged(0, currentList.size)
+    }
+
+    val allSelected: Boolean get() = currentList.isNotEmpty() && selectedIds.size == currentList.size
+
+    companion object CartDiffCallback : DiffUtil.ItemCallback<CartItem>() {
+        override fun areItemsTheSame(oldItem: CartItem, newItem: CartItem) = oldItem.menuId == newItem.menuId
+        override fun areContentsTheSame(oldItem: CartItem, newItem: CartItem) = oldItem == newItem
+    }
+}
