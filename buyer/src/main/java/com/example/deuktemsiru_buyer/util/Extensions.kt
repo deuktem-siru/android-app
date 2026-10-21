@@ -1,0 +1,176 @@
+package com.example.deuktemsiru_buyer.util
+
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Color
+import android.view.View
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.TextView
+import android.widget.Toast
+import androidx.core.widget.doOnTextChanged
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import com.example.deuktemsiru_buyer.R
+import com.example.deuktemsiru_buyer.data.CartManager
+import com.example.deuktemsiru_buyer.data.Store
+import com.example.deuktemsiru_buyer.data.categoryToApi
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.EncodeHintType
+import com.google.zxing.MultiFormatWriter
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+fun Fragment.toast(message: String, duration: Int = Toast.LENGTH_SHORT) {
+    Toast.makeText(requireContext(), message, duration).show()
+}
+
+// S14 – Price formatting
+fun Int.formatPrice(): String = "%,d원".format(this)
+
+// S18 – 24h → 12h display conversion
+fun String.toDisplayHour(): String {
+    val hour = substringBefore(":").toIntOrNull() ?: return this
+    val minute = substringAfter(":", "00")
+    val displayHour = when {
+        hour == 0 -> 12
+        hour > 12 -> hour - 12
+        else -> hour
+    }
+    return "$displayHour:${minute.padStart(2, '0')}"
+}
+
+fun String.toHourMinute(): String = runCatching {
+    val time = substringAfter("T", this).substringBefore(".")
+    val parts = time.split(":")
+    "%02d:%02d".format(parts[0].toInt(), parts.getOrElse(1) { "0" }.toInt())
+}.getOrDefault(this)
+
+/** Ticks down from [totalSeconds], handing the caller a pre-formatted "mm:ss" label. */
+fun Fragment.startCountdown(
+    totalSeconds: Long,
+    currentJob: Job?,
+    onTick: (String) -> Unit,
+): Job {
+    currentJob?.cancel()
+    return viewLifecycleOwner.lifecycleScope.launch {
+        repeatOnLifecycle(Lifecycle.State.STARTED) {
+            var remaining = totalSeconds
+            while (remaining >= 0) {
+                onTick("%02d:%02d".format(remaining / 60, remaining % 60))
+                if (remaining == 0L) break
+                delay(1_000)
+                remaining--
+            }
+        }
+    }
+}
+
+// S17 – Shared QR bitmap generation
+fun generateQrBitmap(content: String, size: Int = 512): Bitmap? = runCatching {
+    val hints = mapOf(EncodeHintType.MARGIN to 1)
+    val matrix = MultiFormatWriter().encode(content, BarcodeFormat.QR_CODE, size, size, hints)
+    val pixels = IntArray(size * size) { i ->
+        if (matrix[i % size, i / size]) Color.BLACK else Color.WHITE
+    }
+    Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        .also { it.setPixels(pixels, 0, size, 0, 0, size, size) }
+}.getOrNull()
+
+// S20 – Shared chip selection styling
+fun Map<TextView, String>.updateChipSelection(selected: String, context: Context) {
+    forEach { (chip, category) ->
+        val isSelected = category == selected
+        chip.setBackgroundResource(
+            if (isSelected) R.drawable.bg_chip_selected else R.drawable.bg_chip_unselected
+        )
+        chip.setTextColor(
+            // 선택 칩 배경(bg_chip_selected)은 다크에서도 반전되지 않는 primary_fixed 라
+            // colorOnPrimary(다크=#5C1A0D) 가 아니라 흰색으로 고정한다.
+            context.getColor(if (isSelected) R.color.white else R.color.text)
+        )
+    }
+}
+
+fun Fragment.bindSearch(
+    editText: EditText,
+    searchButton: ImageButton,
+    onQueryChanged: () -> Unit,
+) {
+    editText.doOnTextChanged { _, _, _, _ -> onQueryChanged() }
+    editText.setOnEditorActionListener { _, actionId, _ ->
+        if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+            hideKeyboard(editText)
+            onQueryChanged()
+            true
+        } else {
+            false
+        }
+    }
+    searchButton.setOnClickListener {
+        hideKeyboard(editText)
+        onQueryChanged()
+    }
+}
+
+private fun Fragment.hideKeyboard(editText: EditText) {
+    val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    imm.hideSoftInputFromWindow(editText.windowToken, 0)
+    editText.clearFocus()
+}
+
+fun Map<TextView, String>.bindCategorySelection(
+    fragment: Fragment,
+    selected: () -> String,
+    onSelected: (String) -> Unit,
+) {
+    updateChipSelection(selected(), fragment.requireContext())
+    forEach { (chip, category) ->
+        chip.setOnClickListener {
+            onSelected(category)
+            updateChipSelection(selected(), fragment.requireContext())
+        }
+    }
+}
+
+// S21 – Shared store filtering by category and query
+fun List<Store>.filterStores(category: String, query: String): List<Store> {
+    val apiCategory = if (category == "전체") null else categoryToApi(category)
+    return filter { store ->
+        val matchesCategory = apiCategory == null || categoryToApi(store.category) == apiCategory
+        val matchesQuery = query.isBlank() ||
+            store.name.contains(query, ignoreCase = true) ||
+            store.category.contains(query, ignoreCase = true) ||
+            store.address.contains(query, ignoreCase = true) ||
+            store.menus.any { it.name.contains(query, ignoreCase = true) }
+        matchesCategory && matchesQuery
+    }
+}
+
+fun TextView.updateCartBadge() {
+    val count = CartManager.totalCount
+    visibility = if (count > 0) View.VISIBLE else View.GONE
+    if (count > 0) {
+        text = if (count > 9) "9+" else count.toString()
+        bringToFront()
+    }
+}
+
+fun orderStatusLabel(status: String) = when (status) {
+    "PENDING" -> "접수 대기"
+    "CONFIRMED" -> "접수 완료"
+    "PREPARING" -> "준비중"
+    "READY" -> "픽업 대기"
+    "PICKED_UP" -> "픽업 완료"
+    "COMPLETED" -> "완료"
+    "CANCELLED" -> "취소됨"
+    else -> status
+}
+
+fun formatDistanceMeters(distanceMeters: Int): String =
+    if (distanceMeters >= 1000) "%.1fkm".format(distanceMeters / 1000.0) else "${distanceMeters}m"
